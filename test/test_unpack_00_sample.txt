@@ -1,0 +1,123 @@
+# -*- coding: utf8 -*-
+from pylab import *
+############################################################
+# Fraud detection with Benford's law
+############################################################
+"""
+Benford's law is the empirical observation that the distribution of the first digit of numbers, in a wide variety of cases, is not uniform and has follows a specific distribution.
+
+This law is sometimes use in audits to detect frauds, inefficiencies, and other irregularities in accounting books.
+
+In this demo, we would like to apply this method to the expenses made on their Personal Cards by employees of the City of Westminster council in the month of January, 2014.
+"""
+# Initialize inline plots
+#%matplotlib inline
+
+# Useful imports
+import os.path
+import numpy as np
+import pandas as pd
+from scipy import stats
+import matplotlib.pyplot as plt
+####################
+
+# Load the data in a Pandas DataFrams.
+filename = os.path.join('data', 'City_of_Westminster_Council_line_level_data_Jan2014_PCARD.csv')
+expenses = pd.read_csv(filename)
+####################
+
+# Look at a sample of the data.
+expenses.head()
+####################
+
+expenses.Amount.describe()
+####################
+
+"""
+The data set contains small expenses, up to a maximum of 2610 GBP.
+
+The minimum amount is negative, which means that the data sets contains reimbursement, which we do not want to consider further.
+"""
+# Remove reimbursements and numbers that start with '0'.
+invalid = expenses.Amount <= 1.0
+expenses.loc[invalid, 'Amount'] = np.nan
+####################
+
+# Extract first digit.
+def get_first_digit(x):
+    """ Return the first digit of a floating point number. """
+    if np.isnan(x):
+        return x
+    digit = str(x)[0]
+    return int(digit)
+
+expenses['digit'] = expenses.Amount.apply(get_first_digit)
+####################
+
+# Counts of first digits.
+counts = expenses.groupby('digit').Amount.count()
+print counts
+####################
+
+"""
+Now we need to compare the distribution of the first digit in the reported expenses with the one predicted by Benford's law.
+"""
+# Benford's distribution.
+digits = np.arange(1, 10)
+p = np.log10(1.0 + 1.0/digits)
+predicted_counts = p * counts.sum()
+####################
+
+# Compare to Benford's law prediction, visually.
+expenses.digit.hist(bins=np.arange(1, 11) - 0.5)
+plt.plot(digits, predicted_counts, 'ro')
+plt.legend(['observed', 'predicted']);
+####################
+
+"""
+There is a suspicious excess of digits '4' and '5'... is it a statistically significant observation?
+
+To verify this, we would like to test the null hypothesis that the two distributions are identical.
+"""
+stat, p_value = stats.chisquare(counts, predicted_counts)
+print 'Chi-squared=%.2f, P=%.6f' % (stat, p_value)
+####################
+
+"""
+The test indicates that it's incredibly unlikely that the two distributions are identical. What causes the deviation from Benford's law?
+
+Let's have a look at all the transactions starting with digit '5'.
+"""
+suspicious = expenses[expenses.digit == 5][['Amount', 'Supplier']]
+pd.set_option('display.max_rows', 500)
+suspicious
+####################
+
+"""
+Is it possible that the anomalies are due to recurrent expenses with the same amount?
+
+We can have a look at the distribution of suppliers for expenses that start with '5'.
+"""
+g = suspicious.groupby('Supplier')
+count = g.count()
+count.sort('Amount').tail()
+####################
+
+"""
+It looks like most of these transactions are due to London Underground charges of 5.00 and 50.0 pounds ('OYSTER RENEW WEB' and 'LUL TICKET MACHINE').
+
+In fact, looking at the distribution of amounts it's possible to see that prices in this cluster around round numbers: 5, 10, 20, etc.
+"""
+expenses.Amount.hist(bins=np.linspace(0, 50, 30));
+####################
+
+"""
+In this particular case, Benford's law is foiled by the behevioral psychology behind retail prices.
+
+The analysis does point out some inefficiencies: multiple entries with the same amount and supplier indicate that the City of Westminster could save money by making this purchases in bulk; for example, by negotiating a collective price for the London Underground season ticket for its employees.
+"""
+
+####################
+
+print (" The presented result might be overlapping. ".center(60, "*"))
+show()
