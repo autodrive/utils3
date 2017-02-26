@@ -7,6 +7,7 @@ Will create a git_util.ini during import if missing (may take some time)
 includes other utility functions
 """
 import os
+import re
 import sys
 import time
 import urlparse
@@ -449,6 +450,63 @@ def get_far_remote_name_list(remote_info):
         return url_is_remote(remote_info[remote_name].get('url', ''))
 
     return filter(remote_url_is_remote, remote_info.iterkeys())
+
+
+def get_tag_local_list(b_verbose=False):
+    result_txt = git('tag', b_verbose=b_verbose)
+    result_list = result_txt.splitlines()
+    return result_list
+
+
+def get_tag_repo_list(repo_name='origin', b_verbose=False):
+    # http://stackoverflow.com/questions/20734181/how-to-get-list-of-latest-tags-in-remote-git
+    cmd_remote_txt = 'ls-remote --tags %s' % repo_name
+    result_txt = git(cmd_remote_txt, b_verbose=b_verbose)
+    result_hash_list = result_txt.splitlines()
+    # http://stackoverflow.com/questions/16398471/regex-not-ending-with
+    result_list_list = [re.findall(r'refs/tags/(.+)(?<!\^\{\})$', hash_txt) for hash_txt in result_hash_list]
+    result_list_list_filtered = filter(None, result_list_list)
+    result_list = [found_list[0] for found_list in result_list_list_filtered]
+    return result_list
+
+
+def git_tag_local_repo(tag_name_txt, repo_name='origin', b_verbose=False):
+    # http://minsone.github.io/git/git-addtion-and-modified-delete-tag
+    cmd_local_txt = 'tag %s' % tag_name_txt
+    cmd_remote_txt = 'push %s %s' % (repo_name, tag_name_txt)
+    result_local = git(cmd_local_txt, b_verbose=b_verbose)
+    result_remote = git(cmd_remote_txt, b_verbose=b_verbose)
+    result = {'local': result_local,
+              'remote': result_remote}
+    return result
+
+
+def delete_a_tag_local_repo(tag_name_txt, repo_name='origin', b_verbose=False):
+    # https://nathanhoad.net/how-to-delete-a-remote-git-tag
+    cmd_local_txt = 'tag -d %s' % tag_name_txt
+    cmd_remote_txt = 'push %s :refs/tags/%s' % (repo_name, tag_name_txt)
+    result_local = git(cmd_local_txt, b_verbose=b_verbose)
+
+    repo_tag_list = get_tag_repo_list(repo_name)
+    result_remote = '(tag %s not in repository %s tag list)' % (tag_name_txt, repo_name)
+
+    if tag_name_txt in repo_tag_list:
+        result_remote = git(cmd_remote_txt, b_verbose=b_verbose)
+
+    result = {'local': result_local,
+              'remote': result_remote}
+    return result
+
+
+def delete_all_tags_local_repo(repo_name='origin', b_verbose=False):
+    local_tag_list = get_tag_local_list(b_verbose)
+    result = []
+    for tag_name_txt in local_tag_list:
+        result_tag_dict = delete_a_tag_local_repo(tag_name_txt, repo_name, b_verbose)
+        result_tag_dict['tag_name'] = tag_name_txt
+        result.append(result_tag_dict)
+
+    return result
 
 
 if "__main__" == __name__:
