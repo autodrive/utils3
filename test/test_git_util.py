@@ -181,7 +181,7 @@ class TestGitUtilRemoteInfo(unittest.TestCase):
         self.assertFalse(git_util.get_far_remote_name_list(local_info_dict))
 
     def test_get_tag_list(self):
-        result_list = git_util.get_tag_list()
+        result_list = git_util.get_tag_local_list()
         expected_set = set(['bug/finish/found_set', 'bug/finish/repo_finder_moved', 'bug/start/found_set',
                             'bug/start/repo_finder_moved'])
         result_set = set(result_list)

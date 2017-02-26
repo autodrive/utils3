@@ -451,7 +451,7 @@ def get_far_remote_name_list(remote_info):
     return filter(remote_url_is_remote, remote_info.iterkeys())
 
 
-def get_tag_list(b_verbose=False):
+def get_tag_local_list(b_verbose=False):
     result_txt = git('tag', b_verbose=b_verbose)
     result_list = result_txt.splitlines()
     return result_list
