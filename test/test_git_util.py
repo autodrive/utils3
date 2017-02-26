@@ -202,10 +202,10 @@ class TestGitUtilRemoteInfo(unittest.TestCase):
 
         try:
             local_tag_list = git_util.get_tag_local_list()
-            self.assertTrue(tag_name in local_tag_list)
+            self.assertTrue(tag_name in local_tag_list, msg='%s not in local tag list' % tag_name)
 
             repo_tag_list = git_util.get_tag_repo_list(repo_name)
-            self.assertTrue(tag_name in repo_tag_list)
+            self.assertTrue(tag_name in repo_tag_list, msg='%s not in repo %s tag list' % (tag_name, repo_name))
         except AssertionError as e:
             git_util.delete_a_tag_local_repo(tag_name, repo_name)
             raise e
