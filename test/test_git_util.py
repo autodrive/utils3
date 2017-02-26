@@ -188,6 +188,11 @@ class TestGitUtilRemoteInfo(unittest.TestCase):
 
         self.assertSetEqual(expected_set, result_set.intersection(expected_set))
 
+    def test_get_tag_repo_list(self):
+        result_list = git_util.get_tag_repo_list()
+        expected_set = set()
+        self.assertSetEqual(expected_set, set(result_list))
+
 
 if __name__ == '__main__':
     unittest.main()

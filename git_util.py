@@ -457,5 +457,12 @@ def get_tag_local_list(b_verbose=False):
     return result_list
 
 
+def get_tag_repo_list(repo_name='origin', b_verbose=False):
+    cmd_remote_txt = 'ls-remote %s --tags' % repo_name
+    result_txt = git(cmd_remote_txt, b_verbose=b_verbose)
+    result_list = result_txt.splitlines()
+    return result_list
+
+
 if "__main__" == __name__:
     git('log')
