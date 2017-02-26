@@ -182,8 +182,8 @@ class TestGitUtilRemoteInfo(unittest.TestCase):
 
     def test_get_tag_list(self):
         result_list = git_util.get_tag_local_list()
-        expected_set = set(['bug/finish/found_set', 'bug/finish/repo_finder_moved', 'bug/start/found_set',
-                            'bug/start/repo_finder_moved'])
+        expected_set = {'bug/finish/found_set', 'bug/finish/repo_finder_moved', 'bug/start/found_set',
+                        'bug/start/repo_finder_moved'}
         result_set = set(result_list)
 
         self.assertSetEqual(expected_set, result_set.intersection(expected_set))
