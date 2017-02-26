@@ -1,6 +1,8 @@
 import os
 import tempfile
 import unittest
+import random
+
 
 # to use git_util.ini of ..
 current_path = os.path.abspath(os.curdir)
@@ -192,6 +194,23 @@ class TestGitUtilRemoteInfo(unittest.TestCase):
         result_list = git_util.get_tag_repo_list()
         expected_set = set()
         self.assertSetEqual(expected_set, set(result_list))
+
+    def test_git_tag_local_repo(self):
+        tag_name = 'del_this_%d' % random.randint(1, 100)
+        repo_name = 'origin'
+        result_dict = git_util.git_tag_local_repo(tag_name, repo_name)
+
+        try:
+            local_tag_list = git_util.get_tag_local_list()
+            self.assertTrue(tag_name in local_tag_list)
+
+            repo_tag_list = git_util.get_tag_repo_list(repo_name)
+            self.assertTrue(tag_name in repo_tag_list)
+        except AssertionError as e:
+            git_util.delete_a_tag_local_repo(tag_name, repo_name)
+            raise e
+
+        git_util.delete_a_tag_local_repo(tag_name, repo_name)
 
 
 if __name__ == '__main__':

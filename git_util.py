@@ -464,5 +464,27 @@ def get_tag_repo_list(repo_name='origin', b_verbose=False):
     return result_list
 
 
+def git_tag_local_repo(tag_name_txt, repo_name='origin', b_verbose=False):
+    # http://minsone.github.io/git/git-addtion-and-modified-delete-tag
+    cmd_local_txt = 'tag %s' % tag_name_txt
+    cmd_remote_txt = 'push %s %s' % (repo_name, tag_name_txt)
+    result_local = git(cmd_local_txt, b_verbose=b_verbose)
+    result_remote = git(cmd_remote_txt, b_verbose=b_verbose)
+    result = {'local': result_local,
+              'remote': result_remote}
+    return result
+
+
+def delete_a_tag_local_repo(tag_name_txt, repo_name='origin', b_verbose=False):
+    # https://nathanhoad.net/how-to-delete-a-remote-git-tag
+    cmd_local_txt = 'tag -d %s' % tag_name_txt
+    cmd_remote_txt = 'push %s :refs/tags/%s' % (repo_name, tag_name_txt)
+    result_local = git(cmd_local_txt, b_verbose=b_verbose)
+    result_remote = git(cmd_remote_txt, b_verbose=b_verbose)
+    result = {'local': result_local,
+              'remote': result_remote}
+    return result
+
+
 if "__main__" == __name__:
     git('log')
