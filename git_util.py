@@ -492,5 +492,16 @@ def delete_a_tag_local_repo(tag_name_txt, repo_name='origin', b_verbose=False):
     return result
 
 
+def delete_all_tags_local_repo(repo_name='origin', b_verbose=False):
+    local_tag_list = get_tag_local_list(b_verbose)
+    result = []
+    for tag_name_txt in local_tag_list:
+        result_tag_dict = delete_a_tag_local_repo(tag_name_txt, repo_name, b_verbose)
+        result_tag_dict['tag_name'] = tag_name_txt
+        result.append(result_tag_dict)
+
+    return result
+
+
 if "__main__" == __name__:
     git('log')
