@@ -7,6 +7,7 @@ Will create a git_util.ini during import if missing (may take some time)
 includes other utility functions
 """
 import os
+import re
 import sys
 import time
 import urlparse
@@ -458,9 +459,14 @@ def get_tag_local_list(b_verbose=False):
 
 
 def get_tag_repo_list(repo_name='origin', b_verbose=False):
-    cmd_remote_txt = 'ls-remote %s --tags' % repo_name
+    # http://stackoverflow.com/questions/20734181/how-to-get-list-of-latest-tags-in-remote-git
+    cmd_remote_txt = 'ls-remote --tags %s' % repo_name
     result_txt = git(cmd_remote_txt, b_verbose=b_verbose)
-    result_list = result_txt.splitlines()
+    result_hash_list = result_txt.splitlines()
+    # http://stackoverflow.com/questions/16398471/regex-not-ending-with
+    result_list_list = [re.findall(r'refs/tags/(.+)(?<!\^\{\})$', hash_txt) for hash_txt in result_hash_list]
+    result_list_list_filtered = filter(None, result_list_list)
+    result_list = [found_list[0] for found_list in result_list_list_filtered]
     return result_list
 
 
