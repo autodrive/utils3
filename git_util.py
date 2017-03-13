@@ -226,7 +226,7 @@ def fetch_and_rebase(path, remote='origin', branch='master'):
             git('checkout %s' % branch)
 
         # fetch command
-        git('fetch %s' % remote)
+        git_fetch(remote)
 
         # execute pull branch
         git('rebase --verbose %s/%s' % (remote, branch))
