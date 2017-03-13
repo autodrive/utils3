@@ -274,7 +274,11 @@ def git_config_remote_info(repo_path):
     Return dictionary of remotes of a repository
     :param host_url:
     :param repo_path:
-    :return:
+    :return: {remote_name: {'url' : url_to_remote_repository,
+                             'puttykeyfile' : puttykeyfile_name,
+                             'fetch' : fetch_info
+                             }
+               }
     """
     config_parser = get_git_config_parser(repo_path)
 
