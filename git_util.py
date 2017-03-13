@@ -226,13 +226,77 @@ def fetch_and_rebase(path, remote='origin', branch='master'):
             git('checkout %s' % branch)
 
         # fetch command
-        git('fetch %s' % remote)
+        git_fetch(remote)
 
-        # execute pull command
-        git('rebase --verbose %s/%s' % (remote, branch))
+        # execute pull branch
+        git_rebase_verbose(remote, branch)
 
     # change to stored
     os.chdir(original_full_path)
+
+
+def git_fetch(remote_name):
+    return git('fetch %s' % remote_name)
+
+
+def git_rebase_verbose(remote, branch):
+    return git('rebase --verbose %s/%s' % (remote, branch))
+
+
+def git_checkout(branch):
+    return git('checkout %s' % branch)
+
+
+def git_switch_and_rebase_verbose(remote_name='origin', branch='master'):
+    """
+    switch to given branch and rebase verbosely
+
+    :param str remote_name:
+    :param str branch:
+    :return:
+    :rtype list[str]
+    """
+    result = []
+    branch_backup = current_branch()
+
+    if branch_backup != branch:
+        # check out master branch
+        result.append(git_checkout(branch))
+
+    result.append(git_rebase_verbose(remote_name, branch))
+
+    result.append(git_checkout(branch_backup))
+
+    return result
+
+
+def fetch_all_and_rebase(path, remote_name_list=('origin',), branch='master'):
+    """
+    fetch & rebase from multiple repositories
+
+    :param str path: local repository
+    :param list[str] remote_name_list:
+    :param str branch:
+    :return: list[str]
+    """
+
+    # store original path
+    original_full_path = os.path.abspath(os.curdir)
+
+    # change to path
+    os.chdir(path)
+
+    # fetch from all remotes in the list
+    result = map(git_fetch, remote_name_list)
+    result.append(remote_name_list[0])
+
+    # TODO : consider finding the most advanced remote and rebasing
+    result.append(git_switch_and_rebase_verbose(remote_name_list[0], branch))
+
+    # change to stored
+    os.chdir(original_full_path)
+
+    return result
 
 
 def recursively_process_path(path):
@@ -257,16 +321,27 @@ def recursively_process_path(path):
                     update_repository(git_path)
 
 
-def update_repository(git_path, remote='origin', branch='master'):
+def update_repository(git_path, remote_list=('origin',), branch='master'):
     """
-    if SVN, rebase.  Otherwise fetch_and_rebase
+    if SVN, rebase.  Otherwise fetch_all_and_rebase
+
+    :param str git_path:
+    :param list[str] remote_list:
+    :param str branch:
+    :return:
+    """
+    """
     :param git_path:
     :return:
     """
+    result = None
+
     if git_has_svn_files(git_path):
-        svn_rebase(git_path)
+        result = svn_rebase(git_path)
     else:
-        fetch_and_rebase(git_path, remote, branch)
+        result = fetch_all_and_rebase(git_path, remote_list, branch)
+
+    return result
 
 
 def git_config_remote_info(repo_path):
@@ -274,7 +349,11 @@ def git_config_remote_info(repo_path):
     Return dictionary of remotes of a repository
     :param host_url:
     :param repo_path:
-    :return:
+    :return: {remote_name: {'url' : url_to_remote_repository,
+                             'puttykeyfile' : puttykeyfile_name,
+                             'fetch' : fetch_info
+                             }
+               }
     """
     config_parser = get_git_config_parser(repo_path)
 
@@ -415,10 +494,12 @@ def svn_rebase(path):
     # change to path
     os.chdir(path)
 
-    git('svn rebase')
+    result = git('svn rebase')
 
     # change to stored
     os.chdir(original_full_path)
+
+    return result
 
 
 def remote_is_remote(remote_info):
