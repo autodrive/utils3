@@ -235,6 +235,10 @@ def fetch_and_rebase(path, remote='origin', branch='master'):
     os.chdir(original_full_path)
 
 
+def git_fetch(remote_name):
+    return git('fetch %s' % remote_name)
+
+
 def recursively_process_path(path):
     for root, dirs, files in os.walk(path):
         if ".git" in dirs:
