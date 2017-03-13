@@ -321,16 +321,27 @@ def recursively_process_path(path):
                     update_repository(git_path)
 
 
-def update_repository(git_path, remote='origin', branch='master'):
+def update_repository(git_path, remote_list=('origin',), branch='master'):
     """
-    if SVN, rebase.  Otherwise fetch_and_rebase
+    if SVN, rebase.  Otherwise fetch_all_and_rebase
+
+    :param str git_path:
+    :param list[str] remote_list:
+    :param str branch:
+    :return:
+    """
+    """
     :param git_path:
     :return:
     """
+    result = None
+
     if git_has_svn_files(git_path):
-        svn_rebase(git_path)
+        result = svn_rebase(git_path)
     else:
-        fetch_and_rebase(git_path, remote, branch)
+        result = fetch_all_and_rebase(git_path, remote_list, branch)
+
+    return result
 
 
 def git_config_remote_info(repo_path):
