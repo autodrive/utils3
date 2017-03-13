@@ -229,7 +229,7 @@ def fetch_and_rebase(path, remote='origin', branch='master'):
         git_fetch(remote)
 
         # execute pull branch
-        git('rebase --verbose %s/%s' % (remote, branch))
+        git_rebase_verbose(remote, branch)
 
     # change to stored
     os.chdir(original_full_path)
