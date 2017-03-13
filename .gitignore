@@ -99,3 +99,4 @@ git_util.ini
 # test cases
 *_ignore_test_case.txt
 test_case_host_info.txt
+tags_list.txt
