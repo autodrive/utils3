@@ -274,7 +274,7 @@ def fetch_all_and_rebase(path, remote_name_list=('origin',), branch='master'):
     """
     fetch & rebase from multiple repositories
 
-    :param str path:
+    :param str path: local repository
     :param list[str] remote_name_list:
     :param str branch:
     :return: list[str]
