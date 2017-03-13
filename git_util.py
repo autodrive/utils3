@@ -270,6 +270,35 @@ def git_switch_and_rebase_verbose(remote_name='origin', branch='master'):
     return result
 
 
+def fetch_all_and_rebase(path, remote_name_list=('origin',), branch='master'):
+    """
+    fetch & rebase from multiple repositories
+
+    :param str path:
+    :param list[str] remote_name_list:
+    :param str branch:
+    :return: list[str]
+    """
+
+    # store original path
+    original_full_path = os.path.abspath(os.curdir)
+
+    # change to path
+    os.chdir(path)
+
+    # fetch from all remotes in the list
+    result = map(git_fetch, remote_name_list)
+    result.append(remote_name_list[0])
+
+    # TODO : consider finding the most advanced remote and rebasing
+    result.append(git_switch_and_rebase_verbose(remote_name_list[0], branch))
+
+    # change to stored
+    os.chdir(original_full_path)
+
+    return result
+
+
 def recursively_process_path(path):
     for root, dirs, files in os.walk(path):
         if ".git" in dirs:
