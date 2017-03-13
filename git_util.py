@@ -239,6 +239,10 @@ def git_fetch(remote_name):
     return git('fetch %s' % remote_name)
 
 
+def git_rebase_verbose(remote, branch):
+    return git('rebase --verbose %s/%s' % (remote, branch))
+
+
 def recursively_process_path(path):
     for root, dirs, files in os.walk(path):
         if ".git" in dirs:
