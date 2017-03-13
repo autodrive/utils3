@@ -247,6 +247,29 @@ def git_checkout(branch):
     return git('checkout %s' % branch)
 
 
+def git_switch_and_rebase_verbose(remote_name='origin', branch='master'):
+    """
+    switch to given branch and rebase verbosely
+
+    :param str remote_name:
+    :param str branch:
+    :return:
+    :rtype list[str]
+    """
+    result = []
+    branch_backup = current_branch()
+
+    if branch_backup != branch:
+        # check out master branch
+        result.append(git_checkout(branch))
+
+    result.append(git_rebase_verbose(remote_name, branch))
+
+    result.append(git_checkout(branch_backup))
+
+    return result
+
+
 def recursively_process_path(path):
     for root, dirs, files in os.walk(path):
         if ".git" in dirs:
