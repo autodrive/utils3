@@ -192,7 +192,37 @@ class TestGitUtilRemoteInfo(unittest.TestCase):
 
     def test_get_tag_repo_list(self):
         result_list = git_util.get_tag_repo_list()
-        expected_set = set()
+        try:
+            with open('tags_list.txt', 'r') as f:
+                tags_list = f.readlines()
+        except IOError as e:
+            # file might be missing
+            # make a list from git ls-remote
+            result_txt = git_util.git('ls-remote --tags')
+            result_line_list = result_txt.splitlines()
+
+            if result_line_list[0].startswith('From '):
+                result_line_list.pop(0)
+
+            tags_list = []
+            with open('tags_list.txt', 'w') as f_out:
+
+                # build list of expected tags
+                for line_txt in result_line_list:
+                    line_split_list = line_txt.split()
+                    # filter remote tags
+                    filtered_line_split_list = filter(lambda txt: txt.startswith('refs/tags/')
+                                                                  and (not txt.endswith('^{}')),
+                                                      line_split_list)
+                    if filtered_line_split_list:
+                        for tag_item in filtered_line_split_list:
+                            tag_items = tag_item.split('/')[2:]
+                            tag_txt = '/'.join(tag_items)
+                            f_out.write(tag_txt + '\n')
+                            tags_list.append(tag_txt)
+        # finished making a list from git ls-remote
+
+        expected_set = set(tags_list)
         self.assertSetEqual(expected_set, set(result_list))
 
     def test_git_tag_local_repo(self):
