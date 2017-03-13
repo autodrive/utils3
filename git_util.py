@@ -483,10 +483,12 @@ def svn_rebase(path):
     # change to path
     os.chdir(path)
 
-    git('svn rebase')
+    result = git('svn rebase')
 
     # change to stored
     os.chdir(original_full_path)
+
+    return result
 
 
 def remote_is_remote(remote_info):
