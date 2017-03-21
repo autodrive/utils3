@@ -33,7 +33,7 @@ class RecursiveFinderBase(object):
 class RecursiveFinder(RecursiveFinderBase):
     def __init__(self, root_path, ext, target):
         # constructor
-        super(RecursiveFinder, self).__init__(root_path, target)
+        super(RecursiveFinder, self).__init__(root_path)
         self.ext = ext
         self.target = target
 
