@@ -347,13 +347,15 @@ def update_repository(git_path, remote_list=('origin',), branch='master'):
 def git_config_remote_info(repo_path):
     """
     Return dictionary of remotes of a repository
-    :param host_url:
-    :param repo_path:
-    :return: {remote_name: {'url' : url_to_remote_repository,
-                             'puttykeyfile' : puttykeyfile_name,
-                             'fetch' : fetch_info
-                             }
-               }
+
+    {remote_name: {'url'          : url_to_remote_repository,
+                   'puttykeyfile' : puttykeyfile_name,
+                   'fetch'        : fetch_info}}
+
+    :param string repo_path:
+    :return: remote_info_dict
+    :rtype: dict
+
     """
     config_parser = get_git_config_parser(repo_path)
 
