@@ -35,6 +35,8 @@ ignore_list_global = init_ignore()
 class GitRepositoryUpdater(find_git_repos.RecursiveGitRepositoryFinderBase):
     def process_git_folder(self, repo_path):
         if not is_ignore(repo_path):
+            # if this repo path is not in the ignore list
+            # get remote info dictionary
             remote_info = git_util.git_config_remote_info(repo_path)
             self.add_remote_url_to_found(repo_path, remote_info)
 
