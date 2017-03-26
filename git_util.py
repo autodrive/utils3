@@ -6,13 +6,13 @@ Will create a git_util.ini during import if missing (may take some time)
 
 includes other utility functions
 """
+import configparser as cp
 import os
 import re
+import subprocess
 import sys
 import time
 import urllib.parse
-
-import configparser as cp
 
 # TODO : remote info of git-svn
 
@@ -173,7 +173,12 @@ def git(cmd, b_verbose=True):
     # ref : https://docs.python.org/2/library/subprocess.html#subprocess.PIPE
     # p = subprocess.Popen(sh_cmd, bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     # TODO : how to detect if a process hangs?
-    os.system(sh_cmd)
+
+    with open(local_log_filename, 'w') as f_log:
+
+        # https://docs.python.org/3/library/subprocess.html#subprocess.run
+        completed_process = subprocess.run([sh_path_string, '-c', git_cmd, ], stdout=f_log, stderr=f_log)
+    # os.system(sh_cmd)
 
     txt = ''
     if os.path.exists(local_log_filename):
