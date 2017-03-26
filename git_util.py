@@ -185,12 +185,8 @@ def git(cmd, b_verbose=True):
         with open(local_log_filename, 'r') as f:
             txt = f.read()
 
-    f = open(long_log_filename, 'a')
-    f.write(sh_cmd)
-    f.write('\n')
-    f.write(txt)
-    f.write('\n')
-    f.close()
+    with open(long_log_filename, 'a') as f:
+        f.write('%s\n%s\n' % (sh_cmd, txt))
 
     if b_verbose:
         print(txt)
