@@ -79,13 +79,15 @@ def init_config_parser(git_config_filename):
 def generate_config_file():
     # prepare configuration file contents
     git_path = recursively_find_git_path()
+    sh_path = recursively_find_sh_path()
     log_this = os.path.abspath(os.path.join(os.curdir, git_configuration['log_this_filename']))
     log_cumulative = os.path.abspath(os.path.join(os.curdir, git_configuration['log_cumulative_filename']))
 
     # prepare configuration object
-    config_parser = cp.MyRawConfigParser()
+    config_parser = cp.ConfigParser()
     config_parser.add_section(git_configuration['git_section'])
     config_parser.set(git_configuration['git_section'], git_configuration['git_section_path'], git_path)
+    config_parser.set(git_configuration['git_section'], git_configuration['git_section_sh_path'], sh_path)
 
     config_parser.add_section(git_configuration['log_section'])
     config_parser.set(git_configuration['log_section'], git_configuration['log_section_this'], log_this)
@@ -113,6 +115,23 @@ def recursively_find_git_path():
                     git_path = full_path
                     return git_path
     return git_path
+
+
+def recursively_find_sh_path():
+    root = os.path.join(os.sep)
+    if 2 == len(sys.argv):
+        root = sys.argv[1]
+    sh_path = ''
+    for dir_path, dir_names, file_names in os.walk(root):
+        for filename in file_names:
+            name = os.path.splitext(filename)[0]
+            if 'sh' == name:
+                full_path = os.path.join(dir_path, filename)
+                # test a file is executable http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
+                if os.path.isfile(full_path) and os.access(full_path, os.X_OK):
+                    sh_path = full_path
+                    return sh_path
+    return sh_path
 
 
 git_path_string, sh_path_string, log_this_global, log_cumulative_global = initialize()
