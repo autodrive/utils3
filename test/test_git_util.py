@@ -28,7 +28,7 @@ class TestGitUtil(unittest.TestCase):
         dict_hist_info = git_util.git_config_remote_info(os.pardir)
         self.assertTrue(dict_hist_info)
         expected = eval(open('test_case_host_info.txt', 'r').read().strip())
-        self.assertSequenceEqual(expected.items(), dict_hist_info.items())
+        self.assertSequenceEqual(list(expected.items()), list(dict_hist_info.items()))
 
     def test_is_host(self):
         host_name = open('test_case_is_host.txt', 'rt').read().strip()
@@ -193,6 +193,7 @@ class TestGitUtilRemoteInfo(unittest.TestCase):
         try:
             with open('tags_list.txt', 'r') as f:
                 tags_list = f.readlines()
+                tags_list = map(str.strip, tags_list)
         except IOError as e:
             # file might be missing
             # make a list from git ls-remote
@@ -209,9 +210,8 @@ class TestGitUtilRemoteInfo(unittest.TestCase):
                 for line_txt in result_line_list:
                     line_split_list = line_txt.split()
                     # filter remote tags
-                    filtered_line_split_list = filter(lambda txt: txt.startswith('refs/tags/')
-                                                                  and (not txt.endswith('^{}')),
-                                                      line_split_list)
+                    filtered_line_split_list = [txt for txt in line_split_list if txt.startswith('refs/tags/')
+                                                and (not txt.endswith('^{}'))]
                     if filtered_line_split_list:
                         for tag_item in filtered_line_split_list:
                             tag_items = tag_item.split('/')[2:]

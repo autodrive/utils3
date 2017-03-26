@@ -2,7 +2,6 @@
 # -*- coding: utf8 -*-
 import codecs
 import os
-import string
 
 import find_git_repos
 import git_util
@@ -15,7 +14,7 @@ def init_ignore(fname='.git_update_all_ignore'):
     if os.path.exists(fname):
         f = codecs.open(fname, 'r', encoding='utf8')
 
-        additional_list = filter(len, map(string.strip, f.readlines()))
+        additional_list = list(filter(len, list(map(str.strip, f.readlines()))))
         f.close()
 
         additional_set = set(additional_list)
@@ -55,14 +54,14 @@ class GitRepositoryUpdater(find_git_repos.RecursiveGitRepositoryFinderBase):
                 branch_info_dict = git_util.git_config_branch_info(repo_path)
                 branch = 'master'
                 if 'master' not in branch_info_dict:
-                    branch = branch_info_dict.keys()[0]
+                    branch = list(branch_info_dict.keys())[0]
 
                 git_util.update_repository(repo_path, remote_list=remote_name_list, branch=branch)
 
     def add_remote_url_to_found(self, repo_path, remote_info):
         remote_info_items = []
         if remote_info:
-            for key, item in remote_info.iteritems():
+            for key, item in remote_info.items():
                 remote_info_items.append((key, item.get('url', '')))
 
         self.found_set.add((repo_path, tuple(remote_info_items)))
@@ -70,7 +69,7 @@ class GitRepositoryUpdater(find_git_repos.RecursiveGitRepositoryFinderBase):
     @staticmethod
     def is_remote_bitbucket(remote_info):
         b_remote_is_bitbucket = False
-        for server_info in remote_info.itervalues():
+        for server_info in remote_info.values():
             url = server_info.get('url', '')
             if 'bitbucket.org' in url:
                 b_remote_is_bitbucket = True
@@ -80,7 +79,7 @@ class GitRepositoryUpdater(find_git_repos.RecursiveGitRepositoryFinderBase):
     @staticmethod
     def is_remote_naver(remote_info):
         b_remote_is_naver = False
-        for server_info in remote_info.itervalues():
+        for server_info in remote_info.values():
             url = server_info.get('url', '')
             if 'naver.com' in url:
                 b_remote_is_naver = True
@@ -114,7 +113,7 @@ def is_ignore(repo_path, ignore_list=ignore_list_global):
             result_ignore = ignore
         return result_ignore
 
-    result_map = map(includes, ignore_list)
+    result_map = list(map(includes, ignore_list))
 
     if any(result_map):
         result = result_map

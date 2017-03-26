@@ -40,10 +40,10 @@ class TestUnpackIpythonNotebookOneFile(unittest.TestCase):
             # function under test
             unpack.unpack(expected_nb_name, b_verbose=True)
 
-            with open(expected_py_name) as py_file:
+            with open(expected_py_name, encoding='utf8') as py_file:
                 py_txt = py_file.readlines()
 
-                with open(expected_py_sample_name) as py_sample_file:
+                with open(expected_py_sample_name, encoding='utf8') as py_sample_file:
                     py_sample_txt = py_sample_file.readlines()
 
                     formatter = '%0' + str(int(math.log10(max(len(py_txt), len(py_sample_txt)))) + 1) +'d] %r != %r'

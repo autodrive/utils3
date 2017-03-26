@@ -19,7 +19,8 @@ class RecursiveFinderBase(object):
     def recursively_find_in(self):
         # major function
         for dir_path, dir_names, file_names in os.walk(self.root):
-            self.process_folder(unicode(dir_path, self.path_encoding), dir_names, file_names)
+            # encoded_dir_path = str(object=dir_path, encoding=self.path_encoding)
+            self.process_folder(dir_path, dir_names, file_names)
 
     def process_folder(self, dir_path, dir_names, file_names):
         for filename in file_names:

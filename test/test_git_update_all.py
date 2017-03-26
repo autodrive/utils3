@@ -17,7 +17,7 @@ class TestGitUpdateAll(unittest.TestCase):
         result = git_update_all.init_ignore('git_update_ignore_sample.txt')
 
         result_set = set(result)
-        expected_set = set((u'a', u'b', u'c', '$RECYCLE.BIN', '.cache', '.git'))
+        expected_set = set(('a', 'b', 'c', '$RECYCLE.BIN', '.cache', '.git'))
 
         self.assertSequenceEqual(expected_set, result_set)
 

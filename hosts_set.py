@@ -18,7 +18,7 @@ def write_host_info(host_info_dict, output_filename):
     """
     with open(output_filename, 'wt') as f:
         # write result
-        for host_info_key, address in host_info_dict['host_info'].iteritems():
+        for host_info_key, address in host_info_dict['host_info'].items():
             write_this = '%s\t%s' % (address, host_info_key)
             print(write_this)
             f.write('%s\n' % write_this)
