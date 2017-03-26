@@ -2,11 +2,16 @@ import os
 import random
 import tempfile
 import unittest
+import configparser as cp
+
 
 # to use git_util.ini of ..
+from unittest import TestCase
+
 current_path = os.path.abspath(os.curdir)
 os.chdir(os.pardir)
 import git_util
+
 os.chdir(current_path)
 
 
@@ -28,7 +33,7 @@ class TestGitUtil(unittest.TestCase):
         dict_hist_info = git_util.git_config_remote_info(os.pardir)
         self.assertTrue(dict_hist_info)
         expected = eval(open('test_case_host_info.txt', 'r').read().strip())
-        self.assertSequenceEqual(list(expected.items()), list(dict_hist_info.items()))
+        self.assertDictEqual(expected, dict_hist_info)
 
     def test_is_host(self):
         host_name = open('test_case_is_host.txt', 'rt').read().strip()
@@ -243,3 +248,17 @@ class TestGitUtilRemoteInfo(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class TestRecursivelyFindPath(TestCase):
+    def test_recursively_find_git_path(self):
+        git_path = git_util.recursively_find_git_path()
+        if git_path:
+            self.assertTrue(os.path.exists(git_path))
+            self.assertTrue(os.path.isfile(git_path))
+
+    def test_recursively_find_sh_path(self):
+        sh_path = git_util.recursively_find_sh_path()
+        if sh_path:
+            self.assertTrue(os.path.exists(sh_path))
+            self.assertTrue(os.path.isfile(sh_path))
