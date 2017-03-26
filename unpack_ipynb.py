@@ -4,13 +4,12 @@ unpack ipynb
 Tested 2015 March
 """
 import os
-from pprint import pprint
 import re
 
 
 def dont_do_anything(fw, cell_dict):
-    print "won't do anything about", cell_dict["cell_type"]
-    print cell_dict
+    print("won't do anything about", cell_dict["cell_type"])
+    print(cell_dict)
 
 
 def handle_heading(fw, cell_dict):
@@ -166,11 +165,11 @@ def unpack(filename, b_verbose=False):
 
     if not os.path.exists(py_name):
 
-        fw = open(py_name, 'w')
+        fw = open(py_name, 'w', encoding='utf8')
 
         ''' read file '''
         if os.path.exists(filename):
-            f = open(filename, 'r')
+            f = open(filename, 'r', encoding='utf8')
             txt = f.read()
             f.close()
 
@@ -196,7 +195,7 @@ def unpack(filename, b_verbose=False):
                     if b_verbose and not cells:
                         print("No worksheet to process")
             except:
-                print filename
+                print(filename)
                 raise
 
         fw.close()

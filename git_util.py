@@ -10,9 +10,9 @@ import os
 import re
 import sys
 import time
-import urlparse
+import urllib.parse
 
-import config_util as cp
+import configparser as cp
 
 # TODO : remote info of git-svn
 
@@ -67,7 +67,7 @@ def init_config_parser(git_config_filename):
     :param git_config_filename:
     :return:
     """
-    config_parser = cp.MyRawConfigParser()
+    config_parser = cp.ConfigParser()
 
     if not os.path.exists(git_config_filename):
         generate_config_file()
@@ -118,7 +118,7 @@ def recursively_find_git_path():
 git_path_string, sh_path_string, log_this_global, log_cumulative_global = initialize()
 
 if not os.path.exists(git_path_string.strip('"')):
-    print "git not found @ %s. Please update %s" % (git_path_string, __file__)
+    print("git not found @ %s. Please update %s" % (git_path_string, __file__))
     sys.exit(-1)
 
 
@@ -170,7 +170,7 @@ def git(cmd, b_verbose=True):
     f.close()
 
     if b_verbose:
-        print txt
+        print(txt)
 
     return txt
 
@@ -287,7 +287,7 @@ def fetch_all_and_rebase(path, remote_name_list=('origin',), branch='master'):
     os.chdir(path)
 
     # fetch from all remotes in the list
-    result = map(git_fetch, remote_name_list)
+    result = list(map(git_fetch, remote_name_list))
     result.append(remote_name_list[0])
 
     # TODO : consider finding the most advanced remote and rebasing
@@ -305,7 +305,7 @@ def recursively_process_path(path):
             if '$RECYCLE.BIN' not in root:
                 if os.path.exists(os.path.join(os.path.abspath(root), ".git", "index")):
                     git_path = os.path.abspath(root)
-                    print time.asctime(), git_path
+                    print(time.asctime(), git_path)
                     if "tensorflow" == os.path.split(git_path)[-1] and 'DeepLearningStudyKr' not in git_path:
                         print('tensorflow '.ljust(80, '='))
                     if "llvm" == os.path.split(git_path)[-1]:
@@ -398,7 +398,7 @@ def get_git_config_parser(repo_path):
     git_config_path = os.path.join(repo_path, '.git')
     config_file_path = os.path.join(git_config_path, 'config')
     # config parser example, https://wiki.python.org/moin/ConfigParserExamples
-    config_parser = cp.MyRawConfigParser()
+    config_parser = cp.ConfigParser()
     config_parser.read(config_file_path)
     return config_parser
 
@@ -417,7 +417,7 @@ def remote_info_dict_to_url_tuple(remote_info_dict):
     """
     return tuple(
         map(
-            remote_info_item_to_url_item_tuple, remote_info_dict.iteritems()
+            remote_info_item_to_url_item_tuple, iter(remote_info_dict.items())
         )
     )
 
@@ -447,7 +447,7 @@ def is_host(host_url, repo_path):
 
 
 def select_path(arg, directory_name, file_name):
-    print "please do not use %" % (__file__ + '.' + 'select_path()')
+    print("please do not use %" % (__file__ + '.' + 'select_path()'))
     raise
 
 
@@ -508,11 +508,11 @@ def remote_is_remote(remote_info):
     def server_info_url_is_remote(my_server_info):
         return url_is_remote(my_server_info.get('url', ''))
 
-    return any(map(server_info_url_is_remote, remote_info.itervalues()))
+    return any(map(server_info_url_is_remote, iter(remote_info.values())))
 
 
 def url_is_remote(url):
-    parsed_url = urlparse.urlparse(url)
+    parsed_url = urllib.parse.urlparse(url)
     # https://en.wikipedia.org/wiki/Uniform_Resource_Identifier#Syntax
 
     # https://git-scm.com/book/en/v2/Git-on-the-Server-The-Protocols
@@ -525,14 +525,14 @@ def get_remote_url_list(remote_info):
     def get_url(my_server_info):
         return my_server_info.get('url', '')
 
-    return map(get_url, remote_info.itervalues())
+    return list(map(get_url, iter(remote_info.values())))
 
 
 def get_far_remote_name_list(remote_info):
     def remote_url_is_remote(remote_name):
         return url_is_remote(remote_info[remote_name].get('url', ''))
 
-    return filter(remote_url_is_remote, remote_info.iterkeys())
+    return list(filter(remote_url_is_remote, iter(remote_info.keys())))
 
 
 def get_tag_local_list(b_verbose=False):
@@ -548,7 +548,7 @@ def get_tag_repo_list(repo_name='origin', b_verbose=False):
     result_hash_list = result_txt.splitlines()
     # http://stackoverflow.com/questions/16398471/regex-not-ending-with
     result_list_list = [re.findall(r'refs/tags/(.+)(?<!\^\{\})$', hash_txt) for hash_txt in result_hash_list]
-    result_list_list_filtered = filter(None, result_list_list)
+    result_list_list_filtered = [_f for _f in result_list_list if _f]
     result_list = [found_list[0] for found_list in result_list_list_filtered]
     return result_list
 
