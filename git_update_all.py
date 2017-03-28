@@ -53,7 +53,7 @@ class GitRepositoryUpdater(find_git_repos.RecursiveGitRepositoryFinderBase):
                 # if repository does not have the branch 'master' try to set a different one
                 branch_info_dict = git_util.git_config_branch_info(repo_path)
                 branch = 'master'
-                if 'master' not in branch_info_dict:
+                if (branch_info_dict) and ('master' not in branch_info_dict):
                     branch = list(branch_info_dict.keys())[0]
 
                 git_util.update_repository(repo_path, remote_list=remote_name_list, branch=branch)

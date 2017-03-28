@@ -197,8 +197,8 @@ class TestGitUtilRemoteInfo(unittest.TestCase):
         result_list = git_util.get_tag_repo_list()
         try:
             with open('tags_list.txt', 'r') as f:
-                tags_list = f.readlines()
-                tags_list = map(str.strip, tags_list)
+                tags_list = [tag_str.strip() for tag_str in f.readlines()]
+
         except IOError as e:
             # file might be missing
             # make a list from git ls-remote
