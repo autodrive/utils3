@@ -417,7 +417,7 @@ def get_git_config_parser(repo_path):
     git_config_path = os.path.join(repo_path, '.git')
     config_file_path = os.path.join(git_config_path, 'config')
     # config parser example, https://wiki.python.org/moin/ConfigParserExamples
-    config_parser = cp.ConfigParser()
+    config_parser = cp.ConfigParser(strict=False)
     config_parser.read(config_file_path)
     return config_parser
 
