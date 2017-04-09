@@ -1,11 +1,8 @@
 import os
 import random
+import re
 import tempfile
 import unittest
-import configparser as cp
-
-
-# to use git_util.ini of ..
 from unittest import TestCase
 
 current_path = os.path.abspath(os.curdir)
@@ -232,6 +229,8 @@ class TestGitUtilRemoteInfo(unittest.TestCase):
         tag_name = 'del_this_%d' % random.randint(1, 100)
         repo_name = 'origin'
         result_dict = git_util.git_tag_local_repo(tag_name, repo_name)
+
+        self.assertFalse(re.findall('Permission to .+? denied to .+?$', result_dict['remote']))
 
         try:
             local_tag_list = git_util.get_tag_local_list()
