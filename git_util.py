@@ -6,13 +6,13 @@ Will create a git_util.ini during import if missing (may take some time)
 
 includes other utility functions
 """
+import configparser as cp
 import os
 import re
+import subprocess
 import sys
 import time
 import urllib.parse
-
-import configparser as cp
 
 # TODO : remote info of git-svn
 
@@ -173,20 +173,20 @@ def git(cmd, b_verbose=True):
     # ref : https://docs.python.org/2/library/subprocess.html#subprocess.PIPE
     # p = subprocess.Popen(sh_cmd, bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     # TODO : how to detect if a process hangs?
-    os.system(sh_cmd)
+
+    with open(local_log_filename, 'w') as f_log:
+
+        # https://docs.python.org/3/library/subprocess.html#subprocess.run
+        completed_process = subprocess.run([sh_path_string, '-c', git_cmd, ], stdout=f_log, stderr=f_log)
+    # os.system(sh_cmd)
 
     txt = ''
     if os.path.exists(local_log_filename):
-        f = open(local_log_filename, 'r')
-        txt = f.read()
-        f.close()
+        with open(local_log_filename, 'r') as f:
+            txt = f.read()
 
-    f = open(long_log_filename, 'a')
-    f.write(sh_cmd)
-    f.write('\n')
-    f.write(txt)
-    f.write('\n')
-    f.close()
+    with open(long_log_filename, 'a') as f:
+        f.write('%s\n%s\n' % (sh_cmd, txt))
 
     if b_verbose:
         print(txt)
@@ -417,8 +417,12 @@ def get_git_config_parser(repo_path):
     git_config_path = os.path.join(repo_path, '.git')
     config_file_path = os.path.join(git_config_path, 'config')
     # config parser example, https://wiki.python.org/moin/ConfigParserExamples
-    config_parser = cp.ConfigParser()
-    config_parser.read(config_file_path)
+    config_parser = cp.ConfigParser(strict=False)
+    try:
+        config_parser.read(config_file_path, encoding='utf8')
+    except UnicodeDecodeError as e:
+        config_parser.read(config_file_path, encoding='cp949')
+
     return config_parser
 
 

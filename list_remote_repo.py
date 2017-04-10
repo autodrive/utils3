@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 
+import sys
+
 import find_git_repos
 import git_update_all
 import git_util
-import sys
 
 
 def main(argv):
@@ -19,8 +20,8 @@ class GrepRemoteRepo(find_git_repos.RecursiveGitRepositoryFinderBase):
             # if this repo path is not in the ignore list
             # get remote info dictionary
             remote_info_dict_dict = git_util.git_config_remote_info(repo_path)
-            for remote_name, remot_info_dict in remote_info_dict_dict.iteritems():
-                print(repo_path, remote_name, remot_info_dict.get('url', "No URL"))
+            for remote_name, remot_info_dict in remote_info_dict_dict.items():
+                print((repo_path, remote_name, remot_info_dict.get('url', "No URL")))
 
 
 if __name__ == '__main__':
