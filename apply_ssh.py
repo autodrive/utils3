@@ -38,13 +38,31 @@ class ApplySSH(find_git_repos.RecursiveGitRepositoryFinderBase):
             for remote_name, remote_info_dict in remote_info_dict_dict.items():
                 remote_url = remote_info_dict.get('url', None)
                 if self.is_target(remote_url):
-                    parse_result = list(urllib.parse.urlparse(remote_url))
-                    parse_result[0] = 'ssh'
-                    netloc_split = parse_result[1].split('@')
-                    parse_result[1] = 'git@' + netloc_split[1]
-                    ssh_url = urllib.parse.urlunparse(parse_result)
+                    ssh_url = self.convert_url_https_to_ssh(remote_url)
                     git_cmd = 'remote %s %s' % (remote_name, ssh_url)
                     print(remote_name, remote_url, ssh_url, git_cmd)
+
+    @staticmethod
+    def convert_url_https_to_ssh(https_url):
+        """
+        convert https url to ssh url mainly for bitbucket.org
+        see : https://confluence.atlassian.com/bitbucket/set-up-ssh-for-git-728138079.html
+
+        :param str https_url:
+        :return:
+        """
+
+        parse_result = list(urllib.parse.urlparse(https_url))
+        # scheme
+        parse_result[0] = 'ssh'
+
+        # netloc
+        netloc_split = parse_result[1].split('@')
+        parse_result[1] = 'git@' + netloc_split[-1]
+
+        # make ssh url
+        ssh_url = urllib.parse.urlunparse(parse_result)
+        return ssh_url
 
 
 if __name__ == '__main__':
