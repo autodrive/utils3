@@ -3,6 +3,7 @@
 
 import re
 import sys
+import urllib.parse
 
 import find_git_repos
 import git_update_all
@@ -37,7 +38,13 @@ class ApplySSH(find_git_repos.RecursiveGitRepositoryFinderBase):
             for remote_name, remote_info_dict in remote_info_dict_dict.items():
                 remote_url = remote_info_dict.get('url', None)
                 if self.is_target(remote_url):
-                    print(remote_name, remote_url)
+                    parse_result = list(urllib.parse.urlparse(remote_url))
+                    parse_result[0] = 'ssh'
+                    netloc_split = parse_result[1].split('@')
+                    parse_result[1] = 'git@' + netloc_split[1]
+                    ssh_url = urllib.parse.urlunparse(parse_result)
+                    git_cmd = 'remote %s %s' % (remote_name, ssh_url)
+                    print(remote_name, remote_url, ssh_url, git_cmd)
 
 
 if __name__ == '__main__':
