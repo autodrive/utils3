@@ -23,7 +23,11 @@ class ApplySSH(find_git_repos.RecursiveGitRepositoryFinderBase):
         self.b_arm = b_arm
 
     def is_target(self, url):
-        return bool(self.finder.findall(url))
+        if url is not None:
+            result = bool(self.finder.findall(url))
+        else:
+            result = False
+        return result
 
     def process_git_folder(self, repo_path):
         if not git_update_all.is_ignore(repo_path):

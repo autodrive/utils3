@@ -13,6 +13,7 @@ class TestApplySSH(unittest.TestCase):
         file_name_spec = ''
         applier = apply_ssh.ApplySSH(root_path, file_name_spec)
         self.assertTrue(applier.is_target('https://bitbucket.org/pyslide.git'))
+        self.assertFalse(applier.is_target(None))
 
 
 if __name__ == '__main__':
