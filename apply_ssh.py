@@ -16,9 +16,11 @@ def main(argv):
 
 
 class ApplySSH(find_git_repos.RecursiveGitRepositoryFinderBase):
-    def __init__(self, root_path, file_name_spec, b_verbose=False, repo_site_name='bitbucket.org'):
+    def __init__(self, root_path, file_name_spec, b_verbose=False, repo_site_name='bitbucket.org', b_arm=False):
         super(ApplySSH, self).__init__(root_path, file_name_spec, b_verbose)
         self.finder = re.compile(r'https://.*' + repo_site_name + '/.+\.git')
+        # if true, overwrite a new url
+        self.b_arm = b_arm
 
     def process_git_folder(self, repo_path):
         if not git_update_all.is_ignore(repo_path):
