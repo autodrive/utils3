@@ -22,6 +22,9 @@ class ApplySSH(find_git_repos.RecursiveGitRepositoryFinderBase):
         # if true, overwrite a new url
         self.b_arm = b_arm
 
+    def is_target(self, url):
+        return bool(self.finder.findall(url))
+
     def process_git_folder(self, repo_path):
         if not git_update_all.is_ignore(repo_path):
             # if this repo path is not in the ignore list
