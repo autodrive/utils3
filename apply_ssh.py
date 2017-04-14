@@ -32,7 +32,8 @@ class ApplySSH(find_git_repos.RecursiveGitRepositoryFinderBase):
             remote_info_dict_dict = git_util.git_config_remote_info(repo_path)
             for remote_name, remote_info_dict in remote_info_dict_dict.items():
                 remote_url = remote_info_dict.get('url', None)
-                print(remote_name, remote_url)
+                if self.is_target(remote_url):
+                    print(remote_name, remote_url)
 
 
 if __name__ == '__main__':
