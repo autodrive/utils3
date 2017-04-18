@@ -32,7 +32,11 @@ def main(argv):
             # end if comment block
 
     # end text line loop
-    print(len(d.keys()))
+
+    values_list = list(d.values())
+    values_list.sort()
+
+    print(len(values_list))
 
 
 if __name__ == '__main__':
