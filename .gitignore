@@ -100,3 +100,7 @@ git_util.ini
 *_ignore_test_case.txt
 test_case_host_info.txt
 tags_list.txt
+
+# unique hosts
+hosts.txt
+hosts_unique.txt
