@@ -2,11 +2,11 @@ import sys
 
 
 def main(argv):
-    filename = argv[1]
+    input_file_name = argv[1]
 
     # read file
-    with open(filename, 'rt') as hosts_file:
-        hosts_txt_lines = hosts_file.readlines()
+    with open(input_file_name, 'rt') as input_file:
+        hosts_txt_lines = input_file.readlines()
 
     n_lines = len(hosts_txt_lines)
     print(n_lines)
