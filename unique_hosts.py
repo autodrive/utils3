@@ -3,6 +3,7 @@ import sys
 
 def main(argv):
     input_file_name = argv[1]
+    output_file_name = argv[2]
 
     # read file
     with open(input_file_name, 'rt') as input_file:
@@ -35,6 +36,12 @@ def main(argv):
 
     values_list = list(d.values())
     values_list.sort()
+    numbers, lines = list(zip(*values_list))
+
+    print(len(values_list))
+
+    with open(output_file_name, 'wt') as output_file:
+        output_file.writelines(lines)
 
     print(len(values_list))
 
