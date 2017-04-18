@@ -8,7 +8,8 @@ def main(argv):
     with open(filename, 'rt') as hosts_file:
         hosts_txt_lines = hosts_file.readlines()
 
-    print(len(hosts_txt_lines))
+    n_lines = len(hosts_txt_lines)
+    print(n_lines)
 
     # init dict
     d = {}
@@ -22,15 +23,15 @@ def main(argv):
             if host_line_strip.startswith('#'):
                 # if comment
                 key = host_line_strip
-                # append line number
-                value = i
+                # append line number, and something
+                value = (i, [''])
             else:
                 # if not comment
                 host_line_strip_split = host_line_strip.split()
                 # probably [address, domain name]
                 key = host_line_strip_split[-1]
-                # append line number and address
-                value = (i, host_line_strip_split[:-1])
+                # append line number, address, and a tab character
+                value = (i, host_line_strip_split[:-1] + ['\t'])
             # end if comment block
             # find entry in d
             d[key] = d.get(key, [])
