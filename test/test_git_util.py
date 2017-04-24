@@ -27,7 +27,7 @@ class TestGitUtil(unittest.TestCase):
         self.assertTrue(b_host)
 
     def test_remote_info(self):
-        dict_hist_info = git_util.git_config_remote_info(os.pardir)
+        dict_hist_info = git_util.get_remote_info_from_git_config(os.pardir)
         self.assertTrue(dict_hist_info)
         expected = eval(open('test_case_host_info.txt', 'r').read().strip())
         self.assertDictEqual(expected, dict_hist_info)
@@ -86,7 +86,7 @@ class TestGitUtilRemoteInfo(unittest.TestCase):
                 f.write(txt)
                 f.close()
 
-            remote_info_dict = git_util.git_config_remote_info(temp_folder)
+            remote_info_dict = git_util.get_remote_info_from_git_config(temp_folder)
 
         except:
             if os.path.exists(config_file_name):

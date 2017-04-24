@@ -19,7 +19,7 @@ class GrepRemoteRepo(find_git_repos.RecursiveGitRepositoryFinderBase):
         if not git_update_all.is_ignore(repo_path):
             # if this repo path is not in the ignore list
             # get remote info dictionary
-            remote_info_dict_dict = git_util.git_config_remote_info(repo_path)
+            remote_info_dict_dict = git_util.get_remote_info_from_git_config(repo_path)
             for remote_name, remot_info_dict in remote_info_dict_dict.items():
                 print((repo_path, remote_name, remot_info_dict.get('url', "No URL")))
 

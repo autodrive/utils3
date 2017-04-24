@@ -374,7 +374,7 @@ def update_repository(git_path, remote_list=('origin',), branch='master'):
     return result
 
 
-def git_config_remote_info(repo_path):
+def get_remote_info_from_git_config(repo_path):
     """
     Return dictionary of remotes of a repository
 
@@ -438,7 +438,7 @@ def get_git_config_parser(repo_path):
 
 
 def get_remote_url_tuple(dir_path):
-    remote_info_dict = git_config_remote_info(dir_path)
+    remote_info_dict = get_remote_info_from_git_config(dir_path)
     remote_url_tuple = remote_info_dict_to_url_tuple(remote_info_dict)
     return remote_url_tuple
 

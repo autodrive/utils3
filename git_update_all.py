@@ -36,7 +36,7 @@ class GitRepositoryUpdater(find_git_repos.RecursiveGitRepositoryFinderBase):
         if not is_ignore(repo_path):
             # if this repo path is not in the ignore list
             # get remote info dictionary
-            remote_info = git_util.git_config_remote_info(repo_path)
+            remote_info = git_util.get_remote_info_from_git_config(repo_path)
             self.add_remote_url_to_found(repo_path, remote_info)
 
             remote_name_list = git_util.get_far_remote_name_list(remote_info)
