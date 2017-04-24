@@ -289,12 +289,11 @@ def git_switch_and_rebase_verbose(remote_name='origin', branch='master'):
     return result
 
 
-def fetch_all_and_rebase(path, remote_name_list=('origin',), branch='master'):
+def fetch_all_and_rebase(path, branch='master'):
     """
     fetch & rebase from multiple repositories
 
     :param str path: local repository
-    :param list[str] remote_name_list:
     :param str branch:
     :return: list[str]
     """
@@ -305,12 +304,24 @@ def fetch_all_and_rebase(path, remote_name_list=('origin',), branch='master'):
     # change to path
     os.chdir(path)
 
-    # fetch from all remotes in the list
-    result = list(map(git_fetch, remote_name_list))
-    result.append(remote_name_list[0])
+    # save current branch
+    branch_backup = current_branch()
 
-    # TODO : consider finding the most advanced remote and rebasing
-    result.append(git_switch_and_rebase_verbose(remote_name_list[0], branch))
+    result = []
+
+    if branch_backup != branch:
+        # check out master branch
+        result.append(git_checkout(branch))
+
+    # fetch all branches
+    result.append(git('fetch --all'))
+
+    # https://felipec.wordpress.com/2013/09/01/advanced-git-concepts-the-upstream-tracking-branch/
+    result.append(git('rebase @{u}'))
+
+    # restore branch
+    if branch_backup != branch:
+        result.append(git_checkout(branch_backup))
 
     # change to stored
     os.chdir(original_full_path)
@@ -358,7 +369,7 @@ def update_repository(git_path, remote_list=('origin',), branch='master'):
     if git_has_svn_files(git_path):
         result = svn_rebase(git_path)
     else:
-        result = fetch_all_and_rebase(git_path, remote_list, branch)
+        result = fetch_all_and_rebase(git_path, branch)
 
     return result
 
