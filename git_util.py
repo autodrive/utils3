@@ -627,6 +627,10 @@ def get_remote_branch_list(repo_name='origin', b_verbose=False):
     return get_ls_remote_list('heads', repo_name, b_verbose)
 
 
+def is_branch_in_remote_branch_list(branch_name, repo_name='origin', b_verbose=False):
+    return branch_name in get_remote_branch_list(repo_name, b_verbose)
+
+
 def git_tag_local_repo(tag_name_txt, repo_name='origin', b_verbose=False):
     # http://minsone.github.io/git/git-addtion-and-modified-delete-tag
     cmd_local_txt = 'tag %s' % tag_name_txt

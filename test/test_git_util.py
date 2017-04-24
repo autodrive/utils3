@@ -294,6 +294,10 @@ class TestGitUtilRemoteInfo(unittest.TestCase):
 
         git_util.delete_a_tag_local_repo(tag_name, repo_name)
 
+    def test_is_branch_in_remote_branch_list(self):
+        self.assertTrue(git_util.is_branch_in_remote_branch_list('master', 'origin', False))
+        self.assertFalse(git_util.is_branch_in_remote_branch_list('__m_a_s_t_e_r__', 'origin', False))
+
 
 if __name__ == '__main__':
     unittest.main()
