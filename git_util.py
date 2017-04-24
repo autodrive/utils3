@@ -416,7 +416,7 @@ def get_remote_list(repo_path, b_verbose=True):
     return result_tuple
 
 
-def is_upstream_in_remote_list(repo_path, b_verbose=True):
+def is_upstream_in_remote_list(repo_path, b_verbose=False):
     """
 
     :param str repo_path: repository to list remotes
