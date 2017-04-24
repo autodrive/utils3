@@ -104,3 +104,6 @@ tags_list.txt
 # unique hosts
 hosts.txt
 hosts_unique.txt
+
+# remote_branch_list
+remote_branch_list.txt

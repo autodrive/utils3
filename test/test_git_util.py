@@ -27,7 +27,7 @@ class TestGitUtil(unittest.TestCase):
         self.assertTrue(b_host)
 
     def test_remote_info(self):
-        dict_hist_info = git_util.git_config_remote_info(os.pardir)
+        dict_hist_info = git_util.get_remote_info_from_git_config(os.pardir)
         self.assertTrue(dict_hist_info)
         expected = eval(open('test_case_host_info.txt', 'r').read().strip())
         self.assertDictEqual(expected, dict_hist_info)
@@ -39,6 +39,16 @@ class TestGitUtil(unittest.TestCase):
 
         host_name += '*'
         result = git_util.is_host(host_name, os.pardir)
+        self.assertFalse(result)
+
+    def test_get_remote_list(self):
+        result = git_util.get_remote_list(os.path.abspath(os.curdir), b_verbose=False)
+        expected = ('origin', 'py2_upstream')
+        self.assertSequenceEqual(expected, result)
+
+    def test_is_upstream_in_remote_list(self):
+        result = git_util.is_upstream_in_remote_list(os.path.abspath(os.curdir), b_verbose=False)
+        # currently there is no remote exactly named 'upstream'
         self.assertFalse(result)
 
 
@@ -86,7 +96,7 @@ class TestGitUtilRemoteInfo(unittest.TestCase):
                 f.write(txt)
                 f.close()
 
-            remote_info_dict = git_util.git_config_remote_info(temp_folder)
+            remote_info_dict = git_util.get_remote_info_from_git_config(temp_folder)
 
         except:
             if os.path.exists(config_file_name):
@@ -190,8 +200,48 @@ class TestGitUtilRemoteInfo(unittest.TestCase):
 
         self.assertSetEqual(expected_set, result_set.intersection(expected_set))
 
-    def test_get_tag_repo_list(self):
-        result_list = git_util.get_tag_repo_list()
+    def test_get_remote_branch_list(self):
+        result_list = git_util.get_remote_branch_list()
+
+        filename = 'remote_branch_list.txt'
+        pattern_str = 'heads'
+
+        try:
+            with open(filename, 'r') as f:
+                tags_list = [tag_str.strip() for tag_str in f.readlines()]
+
+        except IOError as e:
+            # file might be missing
+            # make a list from git ls-remote
+            result_txt = git_util.git('ls-remote --%s' % pattern_str)
+            result_line_list = result_txt.splitlines()
+
+            if result_line_list[0].startswith('From '):
+                result_line_list.pop(0)
+
+            tags_list = []
+            with open(filename, 'w') as f_out:
+
+                # build list of expected tags
+                for line_txt in result_line_list:
+                    line_split_list = line_txt.split()
+                    # filter remote tags
+                    filtered_line_split_list = [txt for txt in line_split_list if
+                                                txt.startswith('refs/%s/' % pattern_str)
+                                                and (not txt.endswith('^{}'))]
+                    if filtered_line_split_list:
+                        for tag_item in filtered_line_split_list:
+                            tag_items = tag_item.split('/')[2:]
+                            tag_txt = '/'.join(tag_items)
+                            f_out.write(tag_txt + '\n')
+                            tags_list.append(tag_txt)
+        # finished making a list from git ls-remote
+
+        expected_set = set(tags_list)
+        self.assertSetEqual(expected_set, set(result_list))
+
+    def test_get_remote_tag_list(self):
+        result_list = git_util.get_remote_tag_list()
         try:
             with open('tags_list.txt', 'r') as f:
                 tags_list = [tag_str.strip() for tag_str in f.readlines()]
@@ -236,13 +286,17 @@ class TestGitUtilRemoteInfo(unittest.TestCase):
             local_tag_list = git_util.get_tag_local_list()
             self.assertTrue(tag_name in local_tag_list, msg='%s not in local tag list' % tag_name)
 
-            repo_tag_list = git_util.get_tag_repo_list(repo_name)
+            repo_tag_list = git_util.get_remote_tag_list(repo_name)
             self.assertTrue(tag_name in repo_tag_list, msg='%s not in repo %s tag list' % (tag_name, repo_name))
         except AssertionError as e:
             git_util.delete_a_tag_local_repo(tag_name, repo_name)
             raise e
 
         git_util.delete_a_tag_local_repo(tag_name, repo_name)
+
+    def test_is_branch_in_remote_branch_list(self):
+        self.assertTrue(git_util.is_branch_in_remote_branch_list('master', 'origin', False))
+        self.assertFalse(git_util.is_branch_in_remote_branch_list('__m_a_s_t_e_r__', 'origin', False))
 
 
 if __name__ == '__main__':
