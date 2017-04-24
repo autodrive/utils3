@@ -298,35 +298,45 @@ def fetch_all_and_rebase(path, branch='master'):
     :return: list[str]
     """
 
-    # store original path
-    original_full_path = os.path.abspath(os.curdir)
-
-    # change to path
-    os.chdir(path)
-
-    # save current branch
-    branch_backup = current_branch()
-
-    result = []
-
-    if branch_backup != branch:
-        # check out master branch
-        result.append(git_checkout(branch))
-
-    # fetch all branches
+    branch_backup, original_full_path, result = chdir_checkout(path, branch)# fetch all branches
     result.append(git('fetch --all'))
 
     # https://felipec.wordpress.com/2013/09/01/advanced-git-concepts-the-upstream-tracking-branch/
     result.append(git('rebase @{u}'))
 
-    # restore branch
-    if branch_backup != branch:
-        result.append(git_checkout(branch_backup))
-
-    # change to stored
-    os.chdir(original_full_path)
+    checkout_chdir(original_full_path, branch_backup)
 
     return result
+
+
+def chdir_checkout(path, branch):
+    # store original path
+    original_full_path = os.path.abspath(os.curdir)
+    # change to path
+    os.chdir(path)
+    # save current branch
+    branch_backup = current_branch()
+    result = []
+    if branch_backup != branch:
+        # check out master branch
+        result.append(git_checkout(branch))
+
+    return branch_backup, original_full_path, result
+
+
+def checkout_chdir(original_path, original_branch):
+    result = []
+    # save current branch
+    branch_backup = current_branch()
+    if branch_backup != original_branch:
+        # check out master branch
+        result.append(git_checkout(original_branch))
+
+    # store original path
+    current_full_path = os.path.abspath(os.curdir)
+    # change to path
+    os.chdir(original_path)
+    return branch_backup, current_full_path, result
 
 
 def recursively_process_path(path):
