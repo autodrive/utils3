@@ -240,8 +240,8 @@ class TestGitUtilRemoteInfo(unittest.TestCase):
         expected_set = set(tags_list)
         self.assertSetEqual(expected_set, set(result_list))
 
-    def test_get_tag_repo_list(self):
-        result_list = git_util.get_tag_repo_list()
+    def test_get_remote_tag_list(self):
+        result_list = git_util.get_remote_tag_list()
         try:
             with open('tags_list.txt', 'r') as f:
                 tags_list = [tag_str.strip() for tag_str in f.readlines()]
@@ -286,7 +286,7 @@ class TestGitUtilRemoteInfo(unittest.TestCase):
             local_tag_list = git_util.get_tag_local_list()
             self.assertTrue(tag_name in local_tag_list, msg='%s not in local tag list' % tag_name)
 
-            repo_tag_list = git_util.get_tag_repo_list(repo_name)
+            repo_tag_list = git_util.get_remote_tag_list(repo_name)
             self.assertTrue(tag_name in repo_tag_list, msg='%s not in repo %s tag list' % (tag_name, repo_name))
         except AssertionError as e:
             git_util.delete_a_tag_local_repo(tag_name, repo_name)

@@ -605,7 +605,7 @@ def get_tag_local_list(b_verbose=False):
     return result_list
 
 
-def get_tag_repo_list(repo_name='origin', b_verbose=False):
+def get_remote_tag_list(repo_name='origin', b_verbose=False):
     # http://stackoverflow.com/questions/20734181/how-to-get-list-of-latest-tags-in-remote-git
     cmd_remote_txt = 'ls-remote --tags %s' % repo_name
     result_txt = git(cmd_remote_txt, b_verbose=b_verbose)
@@ -646,7 +646,7 @@ def delete_a_tag_local_repo(tag_name_txt, repo_name='origin', b_verbose=False):
     cmd_remote_txt = 'push %s :refs/tags/%s' % (repo_name, tag_name_txt)
     result_local = git(cmd_local_txt, b_verbose=b_verbose)
 
-    repo_tag_list = get_tag_repo_list(repo_name)
+    repo_tag_list = get_remote_tag_list(repo_name)
     result_remote = '(tag %s not in repository %s tag list)' % (tag_name_txt, repo_name)
 
     if tag_name_txt in repo_tag_list:
