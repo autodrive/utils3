@@ -41,6 +41,11 @@ class TestGitUtil(unittest.TestCase):
         result = git_util.is_host(host_name, os.pardir)
         self.assertFalse(result)
 
+    def test_get_remote_list(self):
+        result = git_util.get_remote_list(os.path.abspath(os.curdir), b_verbose=False)
+        expected = ('origin', 'py2_upstream')
+        self.assertSequenceEqual(expected, result)
+
 
 class TestGitUtilRemoteInfo(unittest.TestCase):
     def setUp(self):

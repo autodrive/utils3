@@ -374,6 +374,25 @@ def update_repository(git_path, remote_list=('origin',), branch='master'):
     return result
 
 
+def get_remote_list(repo_path, b_verbose=True):
+    """
+    Get the list of names of remote repositories from `git origin` command
+
+    :param str repo_path: repository to list remotes
+    :param bool b_verbose: True by default
+    :return: tuple containing remote repository names
+    :rtype: tuple(str)
+    """
+    backup_path = os.path.abspath(os.curdir)
+    os.chdir(repo_path)
+
+    result_tuple = tuple(git('remote', b_verbose=b_verbose).splitlines())
+
+    os.chdir(backup_path)
+
+    return result_tuple
+
+
 def get_remote_info_from_git_config(repo_path):
     """
     Return dictionary of remotes of a repository
