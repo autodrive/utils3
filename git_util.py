@@ -393,6 +393,17 @@ def get_remote_list(repo_path, b_verbose=True):
     return result_tuple
 
 
+def is_upstream_in_remote_list(repo_path, b_verbose=True):
+    """
+
+    :param str repo_path: repository to list remotes
+    :param bool b_verbose: True by default
+    :return:
+    :rtype: bool
+    """
+    return 'upstream' in get_remote_list(repo_path, b_verbose=b_verbose)
+
+
 def get_remote_info_from_git_config(repo_path):
     """
     Return dictionary of remotes of a repository
