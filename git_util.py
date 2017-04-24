@@ -605,28 +605,26 @@ def get_tag_local_list(b_verbose=False):
     return result_list
 
 
-def get_remote_tag_list(repo_name='origin', b_verbose=False):
-    # http://stackoverflow.com/questions/20734181/how-to-get-list-of-latest-tags-in-remote-git
-    cmd_remote_txt = 'ls-remote --tags %s' % repo_name
+def get_ls_remote_list(pattern_str, repo_name='origin', b_verbose=False):
+    cmd_remote_txt = 'ls-remote --%s %s' % (pattern_str, repo_name)
     result_txt = git(cmd_remote_txt, b_verbose=b_verbose)
     result_hash_list = result_txt.splitlines()
     # http://stackoverflow.com/questions/16398471/regex-not-ending-with
-    result_list_list = [re.findall(r'refs/tags/(.+)(?<!\^\{\})$', hash_txt) for hash_txt in result_hash_list]
+    re_pattern = re.compile(r'refs/%s/(.+)(?<!\^\{\})$' % pattern_str)
+    result_list_list = [re_pattern.findall(hash_txt) for hash_txt in result_hash_list]
     result_list_list_filtered = [_f for _f in result_list_list if _f]
     result_list = [found_list[0] for found_list in result_list_list_filtered]
     return result_list
+
+
+def get_remote_tag_list(repo_name='origin', b_verbose=False):
+    # http://stackoverflow.com/questions/20734181/how-to-get-list-of-latest-tags-in-remote-git
+    return get_ls_remote_list('tags', repo_name, b_verbose)
 
 
 def get_remote_branch_list(repo_name='origin', b_verbose=False):
     # http://stackoverflow.com/questions/3471827/how-do-i-list-all-remote-branches-in-git-1-7
-    cmd_remote_txt = 'ls-remote --heads %s' % repo_name
-    result_txt = git(cmd_remote_txt, b_verbose=b_verbose)
-    result_hash_list = result_txt.splitlines()
-    # http://stackoverflow.com/questions/16398471/regex-not-ending-with
-    result_list_list = [re.findall(r'refs/heads/(.+)(?<!\^\{\})$', hash_txt) for hash_txt in result_hash_list]
-    result_list_list_filtered = [_f for _f in result_list_list if _f]
-    result_list = [found_list[0] for found_list in result_list_list_filtered]
-    return result_list
+    return get_ls_remote_list('heads', repo_name, b_verbose)
 
 
 def git_tag_local_repo(tag_name_txt, repo_name='origin', b_verbose=False):
