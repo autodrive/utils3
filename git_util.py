@@ -309,6 +309,18 @@ def fetch_all_and_rebase(path, branch='master'):
     return result
 
 
+def rebase_upstream_branch(path, branch='master', upstream_name='upstream'):
+    branch_backup, original_full_path, result = chdir_checkout(path, branch)  # fetch all branches
+
+    if is_upstream_in_remote_list(path):
+        if is_branch_in_remote_branch_list(branch, upstream_name):
+            result.append(git('rebase %s/%s' % (upstream_name, branch)))
+
+    checkout_chdir(original_full_path, branch_backup)
+
+    return result
+
+
 def chdir_checkout(path, branch):
     # store original path
     original_full_path = os.path.abspath(os.curdir)
@@ -380,6 +392,7 @@ def update_repository(git_path, remote_list=('origin',), branch='master'):
         result = svn_rebase(git_path)
     else:
         result = fetch_all_and_rebase(git_path, branch)
+        result.append(rebase_upstream_branch(git_path, branch))
 
     return result
 
