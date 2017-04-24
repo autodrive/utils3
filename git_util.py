@@ -298,35 +298,57 @@ def fetch_all_and_rebase(path, branch='master'):
     :return: list[str]
     """
 
-    # store original path
-    original_full_path = os.path.abspath(os.curdir)
-
-    # change to path
-    os.chdir(path)
-
-    # save current branch
-    branch_backup = current_branch()
-
-    result = []
-
-    if branch_backup != branch:
-        # check out master branch
-        result.append(git_checkout(branch))
-
-    # fetch all branches
+    branch_backup, original_full_path, result = chdir_checkout(path, branch)# fetch all branches
     result.append(git('fetch --all'))
 
     # https://felipec.wordpress.com/2013/09/01/advanced-git-concepts-the-upstream-tracking-branch/
     result.append(git('rebase @{u}'))
 
-    # restore branch
-    if branch_backup != branch:
-        result.append(git_checkout(branch_backup))
-
-    # change to stored
-    os.chdir(original_full_path)
+    checkout_chdir(original_full_path, branch_backup)
 
     return result
+
+
+def rebase_upstream_branch(path, branch='master', upstream_name='upstream'):
+    branch_backup, original_full_path, result = chdir_checkout(path, branch)  # fetch all branches
+
+    if is_upstream_in_remote_list(path):
+        if is_branch_in_remote_branch_list(branch, upstream_name):
+            result.append(git('rebase %s/%s' % (upstream_name, branch)))
+
+    checkout_chdir(original_full_path, branch_backup)
+
+    return result
+
+
+def chdir_checkout(path, branch):
+    # store original path
+    original_full_path = os.path.abspath(os.curdir)
+    # change to path
+    os.chdir(path)
+    # save current branch
+    branch_backup = current_branch()
+    result = []
+    if branch_backup != branch:
+        # check out master branch
+        result.append(git_checkout(branch))
+
+    return branch_backup, original_full_path, result
+
+
+def checkout_chdir(original_path, original_branch):
+    result = []
+    # save current branch
+    branch_backup = current_branch()
+    if branch_backup != original_branch:
+        # check out master branch
+        result.append(git_checkout(original_branch))
+
+    # store original path
+    current_full_path = os.path.abspath(os.curdir)
+    # change to path
+    os.chdir(original_path)
+    return branch_backup, current_full_path, result
 
 
 def recursively_process_path(path):
@@ -370,11 +392,42 @@ def update_repository(git_path, remote_list=('origin',), branch='master'):
         result = svn_rebase(git_path)
     else:
         result = fetch_all_and_rebase(git_path, branch)
+        result.append(rebase_upstream_branch(git_path, branch))
 
     return result
 
 
-def git_config_remote_info(repo_path):
+def get_remote_list(repo_path, b_verbose=True):
+    """
+    Get the list of names of remote repositories from `git origin` command
+
+    :param str repo_path: repository to list remotes
+    :param bool b_verbose: True by default
+    :return: tuple containing remote repository names
+    :rtype: tuple(str)
+    """
+    backup_path = os.path.abspath(os.curdir)
+    os.chdir(repo_path)
+
+    result_tuple = tuple(git('remote', b_verbose=b_verbose).splitlines())
+
+    os.chdir(backup_path)
+
+    return result_tuple
+
+
+def is_upstream_in_remote_list(repo_path, b_verbose=False):
+    """
+
+    :param str repo_path: repository to list remotes
+    :param bool b_verbose: True by default
+    :return:
+    :rtype: bool
+    """
+    return 'upstream' in get_remote_list(repo_path, b_verbose=b_verbose)
+
+
+def get_remote_info_from_git_config(repo_path):
     """
     Return dictionary of remotes of a repository
 
@@ -438,7 +491,7 @@ def get_git_config_parser(repo_path):
 
 
 def get_remote_url_tuple(dir_path):
-    remote_info_dict = git_config_remote_info(dir_path)
+    remote_info_dict = get_remote_info_from_git_config(dir_path)
     remote_url_tuple = remote_info_dict_to_url_tuple(remote_info_dict)
     return remote_url_tuple
 
@@ -575,16 +628,30 @@ def get_tag_local_list(b_verbose=False):
     return result_list
 
 
-def get_tag_repo_list(repo_name='origin', b_verbose=False):
-    # http://stackoverflow.com/questions/20734181/how-to-get-list-of-latest-tags-in-remote-git
-    cmd_remote_txt = 'ls-remote --tags %s' % repo_name
+def get_ls_remote_list(pattern_str, repo_name='origin', b_verbose=False):
+    cmd_remote_txt = 'ls-remote --%s %s' % (pattern_str, repo_name)
     result_txt = git(cmd_remote_txt, b_verbose=b_verbose)
     result_hash_list = result_txt.splitlines()
     # http://stackoverflow.com/questions/16398471/regex-not-ending-with
-    result_list_list = [re.findall(r'refs/tags/(.+)(?<!\^\{\})$', hash_txt) for hash_txt in result_hash_list]
+    re_pattern = re.compile(r'refs/%s/(.+)(?<!\^\{\})$' % pattern_str)
+    result_list_list = [re_pattern.findall(hash_txt) for hash_txt in result_hash_list]
     result_list_list_filtered = [_f for _f in result_list_list if _f]
     result_list = [found_list[0] for found_list in result_list_list_filtered]
     return result_list
+
+
+def get_remote_tag_list(repo_name='origin', b_verbose=False):
+    # http://stackoverflow.com/questions/20734181/how-to-get-list-of-latest-tags-in-remote-git
+    return get_ls_remote_list('tags', repo_name, b_verbose)
+
+
+def get_remote_branch_list(repo_name='origin', b_verbose=False):
+    # http://stackoverflow.com/questions/3471827/how-do-i-list-all-remote-branches-in-git-1-7
+    return get_ls_remote_list('heads', repo_name, b_verbose)
+
+
+def is_branch_in_remote_branch_list(branch_name, repo_name='origin', b_verbose=False):
+    return branch_name in get_remote_branch_list(repo_name, b_verbose)
 
 
 def git_tag_local_repo(tag_name_txt, repo_name='origin', b_verbose=False):
@@ -604,7 +671,7 @@ def delete_a_tag_local_repo(tag_name_txt, repo_name='origin', b_verbose=False):
     cmd_remote_txt = 'push %s :refs/tags/%s' % (repo_name, tag_name_txt)
     result_local = git(cmd_local_txt, b_verbose=b_verbose)
 
-    repo_tag_list = get_tag_repo_list(repo_name)
+    repo_tag_list = get_remote_tag_list(repo_name)
     result_remote = '(tag %s not in repository %s tag list)' % (tag_name_txt, repo_name)
 
     if tag_name_txt in repo_tag_list:
