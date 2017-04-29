@@ -11,7 +11,9 @@ class TestGitUpdateAll(unittest.TestCase):
     def test_init_ignore(self):
         result = git_update_all.init_ignore()
 
-        self.assertSequenceEqual(('$RECYCLE.BIN', '.cache', '.git'), result)
+        with open(os.path.join('test', 'test_init_ignore.txt'), 'rt', encoding='utf8') as input_file:
+            expected_tuple = tuple([line.strip() for line in input_file])
+        self.assertSequenceEqual(expected_tuple, result)
 
     def test_init_ignore_blank_line(self):
         result = git_update_all.init_ignore('git_update_ignore_sample.txt')
