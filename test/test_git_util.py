@@ -13,6 +13,19 @@ os.chdir(current_path)
 
 
 class TestGitUtil(unittest.TestCase):
+    def setUp(self):
+        # assume this test is running in a subfolder
+        self.repo_path = os.path.abspath(os.pardir)
+
+        if os.path.exists('.git'):
+            # if not, correct
+            self.repo_path = os.getcwd()
+
+        self.test_path = os.path.join(self.repo_path, 'test')
+
+    def tearDown(self):
+        self.repo_path = ''
+
     # test git util
     def test_initialize(self):
         # check .ini file read correctly
