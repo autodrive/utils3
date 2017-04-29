@@ -144,7 +144,7 @@ class ApplySSHgithub(ApplySSHbitbucket):
     def get_pattern_string(repo_site_name):
         if not repo_site_name.startswith('@'):
             repo_site_name = '@' + repo_site_name
-        pattern_string = r'https://.+?' + repo_site_name + '/.+\.git'
+        pattern_string = r'https://.+?' + repo_site_name + '/.+'
         return pattern_string
 
 
@@ -168,6 +168,10 @@ class ApplySSHgithub(ApplySSHbitbucket):
 
         # netloc
         parse_result_list[1] = 'git@' + parse_result.hostname + '-' + parse_result.username
+
+        # path
+        if not parse_result_list[2].endswith('.git'):
+            parse_result_list[2] += '.git'
 
         # make ssh url
         ssh_url = urllib.parse.urlunparse(parse_result_list)
