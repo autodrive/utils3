@@ -32,13 +32,22 @@ class TestGitUtil(unittest.TestCase):
         expected = eval(open('test_case_host_info.txt', 'r').read().strip())
         self.assertDictEqual(expected, dict_hist_info)
 
-    def test_is_host(self):
-        host_name = open('test_case_is_host.txt', 'rt').read().strip()
-        result = git_util.is_host(host_name, os.pardir)
+    def test_is_host2(self):
+        input_file_name = 'test_case_is_host.txt'
+        repo_dir = os.path.abspath(os.pardir)
+
+        print('test_is_host2()', os.getcwd())
+        if not os.path.exists(input_file_name):
+            input_file_name = os.path.join('test', input_file_name)
+            repo_dir = os.getcwd()
+        with open(input_file_name, 'rt') as input_file:
+            host_name = input_file.read().strip()
+
+        result = git_util.is_host(host_name, repo_dir)
         self.assertTrue(result)
 
         host_name += '*'
-        result = git_util.is_host(host_name, os.pardir)
+        result = git_util.is_host(host_name, repo_dir)
         self.assertFalse(result)
 
     def test_get_remote_list(self):
