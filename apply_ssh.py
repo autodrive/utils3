@@ -21,7 +21,7 @@ def main(argv):
     else:
         b_arm = get_true_or_false(argv[3])
 
-    updater = ApplySSH(repo_path, 'config', b_arm=b_arm)
+    updater = ApplySSHbitbucket(repo_path, 'config', b_arm=b_arm)
     updater.recursively_find_in()
 
 
@@ -35,9 +35,9 @@ def get_true_or_false(tf_string):
     return b_arm
 
 
-class ApplySSH(find_git_repos.RecursiveGitRepositoryFinderBase):
+class ApplySSHbitbucket(find_git_repos.RecursiveGitRepositoryFinderBase):
     def __init__(self, root_path, file_name_spec, b_verbose=False, repo_site_name='bitbucket.org', b_arm=False):
-        super(ApplySSH, self).__init__(root_path, file_name_spec, b_verbose)
+        super(ApplySSHbitbucket, self).__init__(root_path, file_name_spec, b_verbose)
         self.finder = re.compile(r'https://.*' + repo_site_name + '/.+\.git')
         # if true, overwrite a new url
         self.b_arm = b_arm

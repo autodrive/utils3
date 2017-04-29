@@ -11,7 +11,7 @@ class TestApplySSH(unittest.TestCase):
     def setUp(self):
         root_path = os.path.abspath(os.curdir)
         file_name_spec = ''
-        self.applier = apply_ssh.ApplySSH(root_path, file_name_spec)
+        self.applier = apply_ssh.ApplySSHbitbucket(root_path, file_name_spec)
 
     def tearDown(self):
         del self.applier
