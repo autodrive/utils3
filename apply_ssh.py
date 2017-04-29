@@ -14,10 +14,12 @@ import git_util
 def main(argv):
     repo_path = argv[1]
 
-    if 3 > len(argv):
+    remote_type = argv[2]
+
+    if 4 > len(argv):
         b_arm = False
     else:
-        b_arm = get_true_or_false(argv[2])
+        b_arm = get_true_or_false(argv[3])
 
     updater = ApplySSH(repo_path, 'config', b_arm=b_arm)
     updater.recursively_find_in()
