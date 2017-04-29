@@ -12,33 +12,62 @@ import git_util
 os.chdir(current_path)
 
 
-class TestGitUtil(unittest.TestCase):
+class MyTestGitUtilBase(unittest.TestCase):
+    def setUp(self):
+        # assume this test is running in a subfolder
+        self.repo_path = os.path.abspath(os.pardir)
+
+        if os.path.exists('.git'):
+            # if not, correct
+            self.repo_path = os.getcwd()
+
+        self.test_path = os.path.join(self.repo_path, 'test')
+
+    def tearDown(self):
+        self.repo_path = ''
+
+
+class TestGitUtil(MyTestGitUtilBase):
     # test git util
     def test_initialize(self):
         # check .ini file read correctly
-        git_path, sh_path, log_this, log_cumulative = git_util.initialize('git_util.ini')
+
+        input_file_name = 'git_util.ini'
+        if os.path.exists('.git') and os.path.exists('test'):
+            input_file_name = os.path.join('test', input_file_name)
+
+        git_path, sh_path, log_this, log_cumulative = git_util.initialize(input_file_name)
         self.assertEqual('a', git_path)
         self.assertEqual('b', log_this)
         self.assertEqual('c', log_cumulative)
         self.assertEqual('d', sh_path)
 
     def test_is_host(self):
-        b_host = git_util.is_host('github', os.pardir)
+        b_host = git_util.is_host('github', self.repo_path)
         self.assertTrue(b_host)
 
     def test_remote_info(self):
-        dict_hist_info = git_util.get_remote_info_from_git_config(os.pardir)
+        dict_hist_info = git_util.get_remote_info_from_git_config(self.repo_path)
         self.assertTrue(dict_hist_info)
-        expected = eval(open('test_case_host_info.txt', 'r').read().strip())
+        expected = eval(open(os.path.join(self.test_path, 'test_case_host_info.txt'), 'r').read().strip())
         self.assertDictEqual(expected, dict_hist_info)
 
-    def test_is_host(self):
-        host_name = open('test_case_is_host.txt', 'rt').read().strip()
-        result = git_util.is_host(host_name, os.pardir)
+    def test_is_host2(self):
+        input_file_name = 'test_case_is_host.txt'
+        repo_dir = os.path.abspath(os.pardir)
+
+        print('test_is_host2()', os.getcwd())
+        if not os.path.exists(input_file_name):
+            input_file_name = os.path.join('test', input_file_name)
+            repo_dir = os.getcwd()
+        with open(input_file_name, 'rt') as input_file:
+            host_name = input_file.read().strip()
+
+        result = git_util.is_host(host_name, repo_dir)
         self.assertTrue(result)
 
         host_name += '*'
-        result = git_util.is_host(host_name, os.pardir)
+        result = git_util.is_host(host_name, repo_dir)
         self.assertFalse(result)
 
     def test_get_remote_list(self):
@@ -52,8 +81,10 @@ class TestGitUtil(unittest.TestCase):
         self.assertFalse(result)
 
 
-class TestGitUtilRemoteInfo(unittest.TestCase):
+class TestGitUtilRemoteInfo(MyTestGitUtilBase):
     def setUp(self):
+        super(TestGitUtilRemoteInfo, self).setUp()
+
         self.remote_name_01 = 'origin'
         self.remote_name_02 = 'upstream'
 
@@ -70,6 +101,9 @@ class TestGitUtilRemoteInfo(unittest.TestCase):
             self.remote_name_01: {'url': self.url_01, 'fetch': self.fetch_01, 'pushurl': self.pushurl_01, },
             self.remote_name_02: {'url': self.url_02, 'fetch': self.fetch_02, 'pushurl': self.pushurl_02, },
         }
+
+    def tearDown(self):
+        super(TestGitUtilRemoteInfo, self).tearDown()
 
     def test_remote_info(self):
         temp_folder = tempfile.mkdtemp()
@@ -125,7 +159,7 @@ class TestGitUtilRemoteInfo(unittest.TestCase):
         self.assertSequenceEqual(expected_remote_url_tuple, result_remote_url_tuple)
 
     def test_branch_info(self):
-        with open('test_branch_info.txt', 'r') as f:
+        with open(os.path.join(self.test_path, 'test_branch_info.txt'), 'r') as f:
             txt = f.read()
 
         temp_folder = tempfile.mkdtemp()

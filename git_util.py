@@ -209,11 +209,8 @@ def checkout_master():
 
 
 def fetch_and_pull(path):
-    # store original path
-    original_full_path = os.path.abspath(os.curdir)
-
     # change to path
-    os.chdir(path)
+    original_full_path = chdir(path)
 
     if remote_returns_something():
 
@@ -232,11 +229,8 @@ def fetch_and_pull(path):
 
 
 def fetch_and_rebase(path, remote='origin', branch='master'):
-    # store original path
-    original_full_path = os.path.abspath(os.curdir)
-
     # change to path
-    os.chdir(path)
+    original_full_path = chdir(path)
 
     if remote_returns_something():
 
@@ -301,6 +295,9 @@ def git_update_mine(path, branch='master', upstream_name='upstream'):
     branch_backup, original_full_path, result = chdir_checkout(path, branch)  # fetch all branches
     result.append(git('fetch --all'))
 
+    # if submodule detected, recursively update
+    result.append(update_submodule(path))
+
     # https://felipec.wordpress.com/2013/09/01/advanced-git-concepts-the-upstream-tracking-branch/
     result.append(git('rebase @{u}'))
 
@@ -347,10 +344,9 @@ def rebase_upstream_branch(path, branch='master', upstream_name='upstream'):
 
 
 def chdir_checkout(path, branch):
-    # store original path
-    original_full_path = os.path.abspath(os.curdir)
     # change to path
-    os.chdir(path)
+    original_full_path = chdir(path)
+
     # save current branch
     branch_backup = current_branch()
     result = []
@@ -369,10 +365,9 @@ def checkout_chdir(original_path, original_branch):
         # check out master branch
         result.append(git_checkout(original_branch))
 
-    # store original path
-    current_full_path = os.path.abspath(os.curdir)
     # change to path
-    os.chdir(original_path)
+    current_full_path = chdir(original_path)
+
     return branch_backup, current_full_path, result
 
 
@@ -430,8 +425,7 @@ def get_remote_list(repo_path, b_verbose=True):
     :return: tuple containing remote repository names
     :rtype: tuple(str)
     """
-    backup_path = os.path.abspath(os.curdir)
-    os.chdir(repo_path)
+    backup_path = chdir(repo_path)
 
     result_tuple = tuple(git('remote', b_verbose=b_verbose).splitlines())
 
@@ -576,19 +570,31 @@ def remote_returns_something():
     return command_returns_something('remote')
 
 
-def update_submodule(path):
-    # store original path
-    original_full_path = os.path.abspath(os.curdir)
+def get_submodule_tuple(path):
+    git_result = git('submodule').strip().splitlines()
+    return tuple(git_result)
 
-    # change to path
-    os.chdir(path)
+
+def update_submodule(path):
+    original_full_path = chdir(path)
+
+    result = ''
 
     if detect_submodule():
-        print('update_submodule()')
-        git('submodule update --recursive', False)
+        # print('update_submodule()')
+        result = git('submodule update --recursive', True)
 
     # change to stored
     os.chdir(original_full_path)
+    return result
+
+
+def chdir(path):
+    # store original path
+    original_full_path = os.getcwd()
+    # change to path
+    os.chdir(path)
+    return original_full_path
 
 
 def git_has_svn_files(root):
@@ -601,16 +607,13 @@ def git_has_svn_files(root):
 
 
 def svn_rebase(path):
-    # store original path
-    original_full_path = os.path.abspath(os.curdir)
-
     # change to path
-    os.chdir(path)
+    original_full_path = chdir(path)
 
     result = git('svn rebase')
 
     # change to stored
-    os.chdir(original_full_path)
+    chdir(original_full_path)
 
     return result
 
