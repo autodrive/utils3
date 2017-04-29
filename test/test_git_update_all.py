@@ -20,7 +20,7 @@ class TestGitUpdateAll(unittest.TestCase):
         self.assertSetEqual(expected_set, result_set)
 
     def test_init_ignore_blank_line(self):
-        result = git_update_all.init_ignore('git_update_ignore_sample.txt')
+        result = git_update_all.init_ignore(os.path.join('test', 'git_update_ignore_sample.txt'))
 
         result_set = set(result)
         expected_set = set(('a', 'b', 'c', '$RECYCLE.BIN', '.cache', '.git'))
