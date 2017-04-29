@@ -9,11 +9,15 @@ os.chdir(test_run_path)
 
 class TestGitUpdateAll(unittest.TestCase):
     def test_init_ignore(self):
-        result = git_update_all.init_ignore()
+        ignore_path = os.path.join('test', 'test_init_ignore.txt')
+        result_set = set(git_update_all.init_ignore(ignore_path))
 
-        with open(os.path.join('test', 'test_init_ignore.txt'), 'rt', encoding='utf8') as input_file:
-            expected_tuple = tuple([line.strip() for line in input_file])
-        self.assertSequenceEqual(expected_tuple, result)
+        expected_base_set = set(['.cache', '.git', '$RECYCLE.BIN',])
+
+        # better way to test than this?
+        with open(ignore_path, 'rt', encoding='utf8') as input_file:
+            expected_set = expected_base_set.union(set([line.strip() for line in input_file]))
+        self.assertSetEqual(expected_set, result_set)
 
     def test_init_ignore_blank_line(self):
         result = git_update_all.init_ignore('git_update_ignore_sample.txt')
