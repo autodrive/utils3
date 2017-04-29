@@ -588,12 +588,15 @@ def update_submodule(path):
     # change to path
     os.chdir(path)
 
+    result = ''
+
     if detect_submodule():
         print('update_submodule()')
-        git('submodule update --recursive', False)
+        result = git('submodule update --recursive', False)
 
     # change to stored
     os.chdir(original_full_path)
+    return result
 
 
 def git_has_svn_files(root):
