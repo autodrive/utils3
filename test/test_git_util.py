@@ -41,16 +41,13 @@ class TestGitUtil(unittest.TestCase):
         self.assertEqual('d', sh_path)
 
     def test_is_host(self):
-        repo_path = os.path.abspath(os.pardir)
-        if os.path.exists('.git'):
-            repo_path = os.getcwd()
-        b_host = git_util.is_host('github', repo_path)
+        b_host = git_util.is_host('github', self.repo_path)
         self.assertTrue(b_host)
 
     def test_remote_info(self):
-        dict_hist_info = git_util.get_remote_info_from_git_config(os.pardir)
+        dict_hist_info = git_util.get_remote_info_from_git_config(self.repo_path)
         self.assertTrue(dict_hist_info)
-        expected = eval(open('test_case_host_info.txt', 'r').read().strip())
+        expected = eval(open(os.path.join(self.test_path, 'test_case_host_info.txt'), 'r').read().strip())
         self.assertDictEqual(expected, dict_hist_info)
 
     def test_is_host2(self):
