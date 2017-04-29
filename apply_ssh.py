@@ -16,15 +16,21 @@ def main(argv):
 
     if 3 > len(argv):
         b_arm = False
-    elif 'false' in argv[2].lower():
-        b_arm = False
-    elif 'True' == argv[2]:
-        b_arm = True
     else:
-        b_arm = False
+        b_arm = get_true_or_false(argv[2])
 
     updater = ApplySSH(repo_path, 'config', b_arm=b_arm)
     updater.recursively_find_in()
+
+
+def get_true_or_false(tf_string):
+    if 'false' in tf_string.lower():
+        b_arm = False
+    elif 'True' == tf_string:
+        b_arm = True
+    else:
+        b_arm = False
+    return b_arm
 
 
 class ApplySSH(find_git_repos.RecursiveGitRepositoryFinderBase):
