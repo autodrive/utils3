@@ -1,13 +1,16 @@
 import unittest
+from test_git_util import MyTestGitUtilBase
 import os
 
 import unpack_ipynb as unpack
 import math
 
 
-class TestUnpackIpythonNotebookOneFile(unittest.TestCase):
+class TestUnpackIpythonNotebookOneFile(MyTestGitUtilBase):
     def setUp(self):
-        self.test_file_name = ('test_unpack_00', 'test_unpack_01')
+        super(TestUnpackIpythonNotebookOneFile, self).setUp()
+
+        self.test_file_name = tuple([os.path.join(self.test_path, filename) for filename in ('test_unpack_00', 'test_unpack_01')])
         self.sample_file_indicator = 'sample'
         self.python_ext = 'py'
         self.notebook_ext = 'ipynb'
