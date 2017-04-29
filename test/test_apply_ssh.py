@@ -7,7 +7,7 @@ os.chdir(os.pardir)
 import apply_ssh
 
 
-class TestApplySSH(unittest.TestCase):
+class TestApplySSHbitbucket(unittest.TestCase):
     def setUp(self):
         root_path = os.path.abspath(os.curdir)
         file_name_spec = ''
