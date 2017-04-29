@@ -81,8 +81,10 @@ class TestGitUtil(MyTestGitUtilBase):
         self.assertFalse(result)
 
 
-class TestGitUtilRemoteInfo(unittest.TestCase):
+class TestGitUtilRemoteInfo(MyTestGitUtilBase):
     def setUp(self):
+        super(TestGitUtilRemoteInfo, self).setUp()
+
         self.remote_name_01 = 'origin'
         self.remote_name_02 = 'upstream'
 
@@ -99,6 +101,9 @@ class TestGitUtilRemoteInfo(unittest.TestCase):
             self.remote_name_01: {'url': self.url_01, 'fetch': self.fetch_01, 'pushurl': self.pushurl_01, },
             self.remote_name_02: {'url': self.url_02, 'fetch': self.fetch_02, 'pushurl': self.pushurl_02, },
         }
+
+    def tearDown(self):
+        super(TestGitUtilRemoteInfo, self).tearDown()
 
     def test_remote_info(self):
         temp_folder = tempfile.mkdtemp()
