@@ -16,7 +16,12 @@ class TestGitUtil(unittest.TestCase):
     # test git util
     def test_initialize(self):
         # check .ini file read correctly
-        git_path, sh_path, log_this, log_cumulative = git_util.initialize('git_util.ini')
+
+        input_file_name = 'git_util.ini'
+        if os.path.exists('.git') and os.path.exists('test'):
+            input_file_name = os.path.join('test', input_file_name)
+
+        git_path, sh_path, log_this, log_cumulative = git_util.initialize(input_file_name)
         self.assertEqual('a', git_path)
         self.assertEqual('b', log_this)
         self.assertEqual('c', log_cumulative)
