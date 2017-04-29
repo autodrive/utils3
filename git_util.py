@@ -209,11 +209,8 @@ def checkout_master():
 
 
 def fetch_and_pull(path):
-    # store original path
-    original_full_path = os.getcwd()
-
     # change to path
-    os.chdir(path)
+    original_full_path = chdir(path)
 
     if remote_returns_something():
 
@@ -232,11 +229,8 @@ def fetch_and_pull(path):
 
 
 def fetch_and_rebase(path, remote='origin', branch='master'):
-    # store original path
-    original_full_path = os.getcwd()
-
     # change to path
-    os.chdir(path)
+    original_full_path = chdir(path)
 
     if remote_returns_something():
 
@@ -350,10 +344,9 @@ def rebase_upstream_branch(path, branch='master', upstream_name='upstream'):
 
 
 def chdir_checkout(path, branch):
-    # store original path
-    original_full_path = os.getcwd()
     # change to path
-    os.chdir(path)
+    original_full_path = chdir(path)
+
     # save current branch
     branch_backup = current_branch()
     result = []
@@ -372,10 +365,9 @@ def checkout_chdir(original_path, original_branch):
         # check out master branch
         result.append(git_checkout(original_branch))
 
-    # store original path
-    current_full_path = os.getcwd()
     # change to path
-    os.chdir(original_path)
+    current_full_path = chdir(original_path)
+
     return branch_backup, current_full_path, result
 
 
@@ -433,8 +425,7 @@ def get_remote_list(repo_path, b_verbose=True):
     :return: tuple containing remote repository names
     :rtype: tuple(str)
     """
-    backup_path = os.getcwd()
-    os.chdir(repo_path)
+    backup_path = chdir(repo_path)
 
     result_tuple = tuple(git('remote', b_verbose=b_verbose).splitlines())
 
@@ -616,16 +607,13 @@ def git_has_svn_files(root):
 
 
 def svn_rebase(path):
-    # store original path
-    original_full_path = os.getcwd()
-
     # change to path
-    os.chdir(path)
+    original_full_path = chdir(path)
 
     result = git('svn rebase')
 
     # change to stored
-    os.chdir(original_full_path)
+    chdir(original_full_path)
 
     return result
 
