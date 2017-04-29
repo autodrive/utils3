@@ -27,5 +27,17 @@ class TestApplySSHbitbucket(unittest.TestCase):
         self.assertEqual(expected01, result01)
 
 
+class TestApplySSHgithub(unittest.TestCase):
+    def setUp(self):
+        root_path = os.path.abspath(os.curdir)
+        file_name_spec = ''
+        self.applier = apply_ssh.ApplySSHgithub(root_path, file_name_spec)
+
+    def test_convert_url_https_to_ssh(self):
+        result01 = self.applier.convert_url_https_to_ssh(r'https://abc@github.com/geekcomputers/Python.git')
+        expected01 = 'ssh://git@github.com-abc/geekcomputers/Python.git'
+        self.assertEqual(expected01, result01)
+
+
 if __name__ == '__main__':
     unittest.main()

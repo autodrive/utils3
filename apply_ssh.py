@@ -16,6 +16,9 @@ def main(argv):
 
     remote_type = argv[2]
 
+    remote_dict = {'bitbucket': ApplySSHbitbucket,
+                   'github': ApplySSHgithub}
+
     if 4 > len(argv):
         b_arm = False
     else:
@@ -121,6 +124,36 @@ class ApplySSHbitbucket(find_git_repos.RecursiveGitRepositoryFinderBase):
 
         # make ssh url
         ssh_url = urllib.parse.urlunparse(parse_result)
+        return ssh_url
+
+
+class ApplySSHgithub(ApplySSHbitbucket):
+    def __init__(self, root_path, file_name_spec, b_verbose=False, repo_site_name='github.com', b_arm=False):
+        super(ApplySSHgithub, self).__init__(root_path, file_name_spec, b_verbose, repo_site_name, b_arm)
+
+    @staticmethod
+    def convert_url_https_to_ssh(https_url):
+        """
+        convert https url to ssh url for github.com
+        see : https://gist.github.com/jexchan/2351996
+              https://help.github.com/articles/connecting-to-github-with-ssh/
+
+        :param str https_url:
+        :return:
+        """
+
+        parse_result = urllib.parse.urlparse(https_url)
+        parse_result_list = list(parse_result)
+
+        # scheme
+        parse_result_list[0] = 'ssh'
+
+
+        # netloc
+        parse_result_list[1] = 'git@' + parse_result.hostname + '-' + parse_result.username
+
+        # make ssh url
+        ssh_url = urllib.parse.urlunparse(parse_result_list)
         return ssh_url
 
 
