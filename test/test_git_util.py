@@ -23,7 +23,10 @@ class TestGitUtil(unittest.TestCase):
         self.assertEqual('d', sh_path)
 
     def test_is_host(self):
-        b_host = git_util.is_host('github', os.pardir)
+        repo_path = os.path.abspath(os.pardir)
+        if os.path.exists('.git'):
+            repo_path = os.getcwd()
+        b_host = git_util.is_host('github', repo_path)
         self.assertTrue(b_host)
 
     def test_remote_info(self):
