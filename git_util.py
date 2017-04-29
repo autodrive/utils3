@@ -594,8 +594,8 @@ def update_submodule(path):
     result = ''
 
     if detect_submodule():
-        print('update_submodule()')
-        result = git('submodule update --recursive', False)
+        # print('update_submodule()')
+        result = git('submodule update --recursive', True)
 
     # change to stored
     os.chdir(original_full_path)
