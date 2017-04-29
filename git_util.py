@@ -182,7 +182,7 @@ def git(cmd, b_verbose=True):
 
     txt = ''
     if os.path.exists(local_log_filename):
-        with open(local_log_filename, 'r') as f:
+        with open(local_log_filename, 'r', encoding='utf8') as f:
             txt = f.read()
 
     with open(long_log_filename, 'a') as f:
