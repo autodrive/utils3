@@ -41,10 +41,16 @@ def get_true_or_false(tf_string):
 class ApplySSHbitbucket(find_git_repos.RecursiveGitRepositoryFinderBase):
     def __init__(self, root_path, file_name_spec, b_verbose=False, repo_site_name='bitbucket.org', b_arm=False):
         super(ApplySSHbitbucket, self).__init__(root_path, file_name_spec, b_verbose)
-        self.finder = re.compile(r'https://.*' + repo_site_name + '/.+\.git')
+        pattern_string = self.get_pattern_string(repo_site_name)
+        self.finder = re.compile(pattern_string)
         # if true, overwrite a new url
         self.b_arm = b_arm
-        self.start_path = os.path.abspath(os.curdir)
+        self.start_path = os.getcwd()
+
+    @staticmethod
+    def get_pattern_string(repo_site_name):
+        pattern_string = r'https://.*' + repo_site_name + '/.+\.git'
+        return pattern_string
 
     def is_target(self, url):
         if url is not None:
