@@ -553,7 +553,7 @@ def is_host(host_url, repo_path):
 
 def select_path(arg, directory_name, file_name):
     print("please do not use %" % (__file__ + '.' + 'select_path()'))
-    raise
+    raise DeprecationWarning
 
 
 def command_returns_something(command):

@@ -14,26 +14,43 @@ import git_util
 def main(argv):
     repo_path = argv[1]
 
-    if 3 > len(argv):
-        b_arm = False
-    elif 'false' in argv[2].lower():
-        b_arm = False
-    elif 'True' == argv[2]:
-        b_arm = True
-    else:
-        b_arm = False
+    remote_type = argv[2]
 
-    updater = ApplySSH(repo_path, 'config', b_arm=b_arm)
+    remote_dict = {'bitbucket': ApplySSHbitbucket,
+                   'github': ApplySSHgithub}
+
+    if 4 > len(argv):
+        b_arm = False
+    else:
+        b_arm = get_true_or_false(argv[3])
+
+    updater = remote_dict[remote_type](repo_path, 'config', b_arm=b_arm)
     updater.recursively_find_in()
 
 
-class ApplySSH(find_git_repos.RecursiveGitRepositoryFinderBase):
+def get_true_or_false(tf_string):
+    if 'false' in tf_string.lower():
+        b_arm = False
+    elif 'True' == tf_string:
+        b_arm = True
+    else:
+        b_arm = False
+    return b_arm
+
+
+class ApplySSHbitbucket(find_git_repos.RecursiveGitRepositoryFinderBase):
     def __init__(self, root_path, file_name_spec, b_verbose=False, repo_site_name='bitbucket.org', b_arm=False):
-        super(ApplySSH, self).__init__(root_path, file_name_spec, b_verbose)
-        self.finder = re.compile(r'https://.*' + repo_site_name + '/.+\.git')
+        super(ApplySSHbitbucket, self).__init__(root_path, file_name_spec, b_verbose)
+        pattern_string = self.get_pattern_string(repo_site_name)
+        self.finder = re.compile(pattern_string)
         # if true, overwrite a new url
         self.b_arm = b_arm
-        self.start_path = os.path.abspath(os.curdir)
+        self.start_path = os.getcwd()
+
+    @staticmethod
+    def get_pattern_string(repo_site_name):
+        pattern_string = r'https://.*' + repo_site_name + '/.+\.git'
+        return pattern_string
 
     def is_target(self, url):
         if url is not None:
@@ -63,6 +80,9 @@ class ApplySSH(find_git_repos.RecursiveGitRepositoryFinderBase):
                         git_util.git(git_cmd)
                         git_util.git(git_cmd_push)
                     os.chdir(self.start_path)
+                elif remote_url is not None:
+                    if ('@github.com' in remote_url) and ('http' in remote_url):
+                        print('skipping remote_url = %s' % remote_url)
 
     @staticmethod
     def get_git_cmd_remote_set_url(remote_name, ssh_url, https_url):
@@ -113,6 +133,48 @@ class ApplySSH(find_git_repos.RecursiveGitRepositoryFinderBase):
 
         # make ssh url
         ssh_url = urllib.parse.urlunparse(parse_result)
+        return ssh_url
+
+
+class ApplySSHgithub(ApplySSHbitbucket):
+    def __init__(self, root_path, file_name_spec, b_verbose=False, repo_site_name='github.com', b_arm=False):
+        super(ApplySSHgithub, self).__init__(root_path, file_name_spec, b_verbose, repo_site_name, b_arm)
+
+    @staticmethod
+    def get_pattern_string(repo_site_name):
+        if not repo_site_name.startswith('@'):
+            repo_site_name = '@' + repo_site_name
+        pattern_string = r'https://.+?' + repo_site_name + '/.+'
+        return pattern_string
+
+
+    @staticmethod
+    def convert_url_https_to_ssh(https_url):
+        """
+        convert https url to ssh url for github.com
+        see : https://gist.github.com/jexchan/2351996
+              https://help.github.com/articles/connecting-to-github-with-ssh/
+
+        :param str https_url:
+        :return:
+        """
+
+        parse_result = urllib.parse.urlparse(https_url)
+        parse_result_list = list(parse_result)
+
+        # scheme
+        parse_result_list[0] = 'ssh'
+
+
+        # netloc
+        parse_result_list[1] = 'git@' + parse_result.hostname + '-' + parse_result.username
+
+        # path
+        if not parse_result_list[2].endswith('.git'):
+            parse_result_list[2] += '.git'
+
+        # make ssh url
+        ssh_url = urllib.parse.urlunparse(parse_result_list)
         return ssh_url
 
 

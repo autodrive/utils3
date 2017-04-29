@@ -7,11 +7,11 @@ os.chdir(os.pardir)
 import apply_ssh
 
 
-class TestApplySSH(unittest.TestCase):
+class TestApplySSHbitbucket(unittest.TestCase):
     def setUp(self):
         root_path = os.path.abspath(os.curdir)
         file_name_spec = ''
-        self.applier = apply_ssh.ApplySSH(root_path, file_name_spec)
+        self.applier = apply_ssh.ApplySSHbitbucket(root_path, file_name_spec)
 
     def tearDown(self):
         del self.applier
@@ -24,6 +24,18 @@ class TestApplySSH(unittest.TestCase):
     def test_convert_url_https_to_ssh(self):
         result01 = self.applier.convert_url_https_to_ssh('https://abc@bitbucket.org/pyslide.git')
         expected01 = 'ssh://git@bitbucket.org/pyslide.git'
+        self.assertEqual(expected01, result01)
+
+
+class TestApplySSHgithub(unittest.TestCase):
+    def setUp(self):
+        root_path = os.path.abspath(os.curdir)
+        file_name_spec = ''
+        self.applier = apply_ssh.ApplySSHgithub(root_path, file_name_spec)
+
+    def test_convert_url_https_to_ssh(self):
+        result01 = self.applier.convert_url_https_to_ssh(r'https://abc@github.com/geekcomputers/Python.git')
+        expected01 = 'ssh://git@github.com-abc/geekcomputers/Python.git'
         self.assertEqual(expected01, result01)
 
 
