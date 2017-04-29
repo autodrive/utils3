@@ -80,8 +80,9 @@ class ApplySSHbitbucket(find_git_repos.RecursiveGitRepositoryFinderBase):
                         git_util.git(git_cmd)
                         git_util.git(git_cmd_push)
                     os.chdir(self.start_path)
-                elif 'github.com' in remote_url:
-                    print('skipping remote_url = %s' % remote_url)
+                elif remote_url is not None:
+                    if ('@github.com' in remote_url) and ('http' in remote_url):
+                        print('skipping remote_url = %s' % remote_url)
 
     @staticmethod
     def get_git_cmd_remote_set_url(remote_name, ssh_url, https_url):
