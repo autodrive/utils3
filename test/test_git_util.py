@@ -12,7 +12,7 @@ import git_util
 os.chdir(current_path)
 
 
-class TestGitUtil(unittest.TestCase):
+class MyTestGitUtilBase(unittest.TestCase):
     def setUp(self):
         # assume this test is running in a subfolder
         self.repo_path = os.path.abspath(os.pardir)
@@ -26,6 +26,8 @@ class TestGitUtil(unittest.TestCase):
     def tearDown(self):
         self.repo_path = ''
 
+
+class TestGitUtil(MyTestGitUtilBase):
     # test git util
     def test_initialize(self):
         # check .ini file read correctly
