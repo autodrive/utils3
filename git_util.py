@@ -289,6 +289,31 @@ def git_switch_and_rebase_verbose(remote_name='origin', branch='master'):
     return result
 
 
+def git_update_mine(path, branch='master', upstream_name='upstream'):
+    """
+
+    :param str path:
+    :param str branch: 'master' by default
+    :param str upstream_name: 'upstream' by default
+    :return: responses from git
+    :rtype: list(str)
+    """
+    branch_backup, original_full_path, result = chdir_checkout(path, branch)  # fetch all branches
+    result.append(git('fetch --all'))
+
+    # https://felipec.wordpress.com/2013/09/01/advanced-git-concepts-the-upstream-tracking-branch/
+    result.append(git('rebase @{u}'))
+
+    if is_upstream_in_remote_list(path):
+        if is_branch_in_remote_branch_list(branch, upstream_name):
+            result.append(git('rebase %s/%s' % (upstream_name, branch)))
+
+    branch_master, git_path_full, result_restore = checkout_chdir(original_full_path, branch_backup)
+    result += result_restore
+
+    return result
+
+
 def fetch_all_and_rebase(path, branch='master'):
     """
     fetch & rebase from multiple repositories
@@ -391,8 +416,7 @@ def update_repository(git_path, remote_list=('origin',), branch='master'):
     if git_has_svn_files(git_path):
         result = svn_rebase(git_path)
     else:
-        result = fetch_all_and_rebase(git_path, branch)
-        result.append(rebase_upstream_branch(git_path, branch))
+        result = git_update_mine(git_path, branch)
 
     return result
 
