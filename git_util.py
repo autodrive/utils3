@@ -585,11 +585,7 @@ def get_submodule_tuple(path):
 
 
 def update_submodule(path):
-    # store original path
-    original_full_path = os.getcwd()
-
-    # change to path
-    os.chdir(path)
+    original_full_path = chdir(path)
 
     result = ''
 
@@ -600,6 +596,14 @@ def update_submodule(path):
     # change to stored
     os.chdir(original_full_path)
     return result
+
+
+def chdir(path):
+    # store original path
+    original_full_path = os.getcwd()
+    # change to path
+    os.chdir(path)
+    return original_full_path
 
 
 def git_has_svn_files(root):
