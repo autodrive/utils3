@@ -24,7 +24,7 @@ def main(argv):
     else:
         b_arm = get_true_or_false(argv[3])
 
-    updater = ApplySSHbitbucket(repo_path, 'config', b_arm=b_arm)
+    updater = remote_dict[remote_type](repo_path, 'config', b_arm=b_arm)
     updater.recursively_find_in()
 
 
