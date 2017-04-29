@@ -576,6 +576,11 @@ def remote_returns_something():
     return command_returns_something('remote')
 
 
+def get_submodule_tuple(path):
+    git_result = git('submodule').strip().splitlines()
+    return tuple(git_result)
+
+
 def update_submodule(path):
     # store original path
     original_full_path = os.getcwd()
