@@ -369,6 +369,58 @@ def git_switch_and_rebase_verbose(remote_name='origin', branch='master'):
     return result
 
 
+def parse_fetch_all_result(text):
+    """
+    Possible input sting:
+ '''Fetching origin
+    From https:/github.com/abc/def
+       aaaaaaaaa..bbbbbbbbb  master     -> origin/master
+    Fetching upstream
+    From https:/github.com/def/abc
+       ccccccccc..ddddddddd  master     -> upstream/master'''
+
+    Possible return value:
+    {
+    'origin': {'update': True,
+                'url': 'https:/llmm.net/abc/def',
+                'upstream branch': 'origin/master'},
+    'upstream': {'update': True,
+            'url': 'https:/llmm.net/def/abc',
+            'upstream branch': 'upstream/master'}
+    }
+
+    :param str text:
+    :return:
+    :rtype: dict(dict('str':'str'|bool))
+    """
+    # possible fetch result:
+    # Fetching origin
+    # From <scheme>://<netloc>/<path>(.git)
+    #    50a80b6e6..b7d2fa35a  master     -> origin/master
+
+    result_dict = {}
+
+    text_list = re.split(r'Fetching\s?', text, re.MULTILINE)
+    for each_text in text_list:
+        if each_text:
+            each_text_lines = each_text.splitlines()
+            # [0] <remote>
+            # [1] From <scheme>://<netloc>/<path>(.git)
+            # [2]    50a80b6e6..b7d2fa35a  master     -> origin/master
+            remote_name = each_text_lines[0].strip()
+            result_dict[remote_name] = {'update': False}
+            if 1 < len(each_text_lines):
+                result_dict[remote_name]['url'] = each_text_lines[1].strip('From').strip()
+            if 2 < len(each_text_lines):
+                info_line_split = each_text_lines[2].strip().split()
+                b_update = ('..' in info_line_split[0]) and ('->' in info_line_split[-2])
+                upstream_branch = info_line_split[-1]
+                result_dict[remote_name]['update'] =b_update
+                result_dict[remote_name]['upstream branch'] =upstream_branch
+
+    return result_dict
+
+
 def git_update_mine(path, branch='master', upstream_name='upstream'):
     """
 
