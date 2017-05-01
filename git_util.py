@@ -724,7 +724,7 @@ def command_returns_something(command):
     return 0 < len(result.strip())
 
 
-def detect_submodule():
+def detect_submodule_from_submodule():
     return command_returns_something('submodule')
 
 
@@ -743,7 +743,7 @@ def update_submodule(path):
 
     result = ''
 
-    if detect_submodule():
+    if detect_submodule_from_submodule():
         # git_logger.info('update_submodule()')
         result = git('submodule update --recursive', True)
 
