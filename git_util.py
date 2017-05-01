@@ -306,6 +306,10 @@ def git_fetch(remote_name):
     return git('fetch %s' % remote_name)
 
 
+def git_fetch_all():
+    return git_fetch('--all')
+
+
 def git_rebase_verbose(remote, branch):
     return git('rebase --verbose %s/%s' % (remote, branch))
 
@@ -347,7 +351,8 @@ def git_update_mine(path, branch='master', upstream_name='upstream'):
     :rtype: list(str)
     """
     branch_backup, original_full_path, result = chdir_checkout(path, branch)  # fetch all branches
-    result.append(git('fetch --all'))
+    git_fetch_result_str = git_fetch_all()
+    result.append(git_fetch_result_str)
 
     # if submodule detected, recursively update
     result.append(update_submodule(path))
@@ -378,7 +383,7 @@ def fetch_all_and_rebase(path, branch='master'):
     """
 
     branch_backup, original_full_path, result = chdir_checkout(path, branch)# fetch all branches
-    result.append(git('fetch --all'))
+    result.append(git_fetch_all())
 
     # https://felipec.wordpress.com/2013/09/01/advanced-git-concepts-the-upstream-tracking-branch/
     result.append(git('rebase @{u}'))
