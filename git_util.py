@@ -357,7 +357,7 @@ def git_update_mine(path, branch='master', upstream_name='upstream'):
     # if submodule detected, recursively update
     result.append(update_submodule(path))
 
-    diff_origin_branch = git('diff --summary %s @{u}' % branch).strip()
+    diff_origin_branch = git_diff_summary(branch, '@{u}')
     result.append(diff_origin_branch)
 
     # if diff with origin/branch seems to have some content, rebase
@@ -368,7 +368,7 @@ def git_update_mine(path, branch='master', upstream_name='upstream'):
     if is_upstream_in_remote_list(path):
         if is_branch_in_remote_branch_list(branch, upstream_name):
             upstream_branch = '%s/%s' % (upstream_name, branch)
-            diff_upstream_branch = git('diff --summary %s %s' % (branch, upstream_branch)).strip()
+            diff_upstream_branch = git_diff_summary(branch, upstream_branch)
             result.append(diff_upstream_branch)
             # if diff with upstream/branch seems to have some content, try to rebase
             if diff_upstream_branch:
@@ -378,6 +378,10 @@ def git_update_mine(path, branch='master', upstream_name='upstream'):
     result += result_restore
 
     return result
+
+
+def git_diff_summary(obj1, obj2):
+    return git('diff --summary %s %s' % (obj1, obj2)).strip()
 
 
 def fetch_all_and_rebase(path, branch='master'):
