@@ -3,7 +3,6 @@ import random
 import re
 import tempfile
 import unittest
-from unittest import TestCase
 
 current_path = os.path.abspath(os.curdir)
 os.chdir(os.pardir)
@@ -345,17 +344,3 @@ class TestGitUtilRemoteInfo(MyTestGitUtilBase):
 
 if __name__ == '__main__':
     unittest.main()
-
-
-class TestRecursivelyFindPath(TestCase):
-    def test_recursively_find_git_path(self):
-        git_path = git_util.recursively_find_git_path()
-        if git_path:
-            self.assertTrue(os.path.exists(git_path))
-            self.assertTrue(os.path.isfile(git_path))
-
-    def test_recursively_find_sh_path(self):
-        sh_path = git_util.recursively_find_sh_path()
-        if sh_path:
-            self.assertTrue(os.path.exists(sh_path))
-            self.assertTrue(os.path.isfile(sh_path))
