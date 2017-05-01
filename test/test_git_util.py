@@ -236,7 +236,7 @@ class TestGitUtilRemoteInfo(MyTestGitUtilBase):
         }
         self.assertFalse(git_util.get_far_remote_name_list(local_info_dict))
 
-    def test_get_tag_list(self):
+    def test_get_tag_local_list(self):
         result_list = git_util.get_tag_local_list()
         expected_set = {'20170313', '20170226'}
         result_set = set(result_list)
@@ -317,25 +317,6 @@ class TestGitUtilRemoteInfo(MyTestGitUtilBase):
 
         expected_set = set(tags_list)
         self.assertSetEqual(expected_set, set(result_list))
-
-    def test_git_tag_local_repo(self):
-        tag_name = 'del_this_%d' % random.randint(1, 100)
-        repo_name = 'origin'
-        result_dict = git_util.git_tag_local_repo(tag_name, repo_name)
-
-        self.assertFalse(re.findall('Permission to .+? denied to .+?$', result_dict['remote']))
-
-        try:
-            local_tag_list = git_util.get_tag_local_list()
-            self.assertTrue(tag_name in local_tag_list, msg='%s not in local tag list' % tag_name)
-
-            repo_tag_list = git_util.get_remote_tag_list(repo_name)
-            self.assertTrue(tag_name in repo_tag_list, msg='%s not in repo %s tag list' % (tag_name, repo_name))
-        except AssertionError as e:
-            git_util.delete_a_tag_local_repo(tag_name, repo_name)
-            raise e
-
-        git_util.delete_a_tag_local_repo(tag_name, repo_name)
 
     def test_is_branch_in_remote_branch_list(self):
         self.assertTrue(git_util.is_branch_in_remote_branch_list('master', 'origin', False))
