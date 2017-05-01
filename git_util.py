@@ -195,10 +195,9 @@ def git(cmd, b_verbose=True):
     local_log_filename = log_this_global
 
     git_cmd = 'git %s' % cmd
-    sh_cmd = build_sh_string(git_cmd)
 
     if b_verbose:
-        git_logger.info(sh_cmd)
+        git_logger.info(git_cmd)
 
     # ref : https://docs.python.org/2/library/subprocess.html#replacing-os-popen-os-popen2-os-popen3
     # ref : https://docs.python.org/2/library/subprocess.html#subprocess.PIPE
@@ -209,7 +208,6 @@ def git(cmd, b_verbose=True):
 
         # https://docs.python.org/3/library/subprocess.html#subprocess.run
         completed_process = subprocess.run([sh_path_string, '-c', git_cmd, ], stdout=f_log, stderr=f_log)
-    # os.system(sh_cmd)
 
     txt = ''
     if os.path.exists(local_log_filename):
