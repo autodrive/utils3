@@ -216,14 +216,27 @@ def git(cmd, b_verbose=True):
 
     if b_verbose:
         # http://stackoverflow.com/questions/9348326/regex-find-word-in-the-string
-        if re.findall(r'^(.*?(\bfatal\b)[^$]*)$', txt, re.I) \
-                or re.findall(r'^(.*?(\bCONFLICT\b)[^$]*)$', txt, re.I | re.MULTILINE) \
-                or re.findall(r'^(.*?(\berror\b)[^$]*)$', txt, re.I):
+        b_error = is_git_error(txt)
+        if b_error:
             git_logger.error(txt)
         else:
             git_logger.info(txt)
 
     return txt
+
+
+def is_git_error(txt):
+    """
+    Whether response from the git command includes error
+
+    :param str txt:
+    :return:
+    :rtype: bool
+    """
+    b_error = re.findall(r'^(.*?(\bfatal\b)[^$]*)$', txt, re.I) \
+              or re.findall(r'^(.*?(\bCONFLICT\b)[^$]*)$', txt, re.I | re.MULTILINE) \
+              or re.findall(r'^(.*?(\berror\b)[^$]*)$', txt, re.I)
+    return b_error
 
 
 def current_branch():
