@@ -8,6 +8,7 @@ includes other utility functions
 """
 import configparser as cp
 import logging
+import logging.handlers
 import os
 import re
 import subprocess
@@ -59,11 +60,37 @@ def initialize(git_config_filename=git_configuration['config_filename']):
     log_cumulative = config_parser.get(git_configuration['log_section'],
                                        git_configuration['log_section_cumulative'])
 
+    git_logger_under_construction = initialize_logger(log_cumulative)
+
+    return git_path, sh_path, log_this, log_cumulative, git_logger_under_construction
+
+
+def initialize_logger(log_file_name):
     # http://gyus.me/?p=418
     # https://docs.python.org/3/library/logging.html
-    logging.basicConfig(filename=log_cumulative, level=logging.DEBUG)
 
-    return git_path, sh_path, log_this, log_cumulative
+    # make logger instance
+    git_logger_under_construction = logging.getLogger('git_logger')
+
+    # make log formatter
+    formatter = logging.Formatter('[%(levelname)s|%(filename)s:%(lineno)s] %(asctime)s > %(message)s')
+
+    # make handlers for stream and file
+    file_handler = logging.FileHandler(log_file_name)
+    stream_handler = logging.StreamHandler()
+
+    # apply formatter to handlers
+    file_handler.setFormatter(formatter)
+    stream_handler.setFormatter(formatter)
+
+    # add handlers to logger
+    git_logger_under_construction.addHandler(file_handler)
+    git_logger_under_construction.addHandler(stream_handler)
+
+    # set logging level
+    git_logger_under_construction.setLevel(logging.DEBUG)
+
+    return git_logger_under_construction
 
 
 def init_config_parser(git_config_filename):
@@ -139,7 +166,7 @@ def recursively_find_sh_path():
     return sh_path
 
 
-git_path_string, sh_path_string, log_this_global, log_cumulative_global = initialize()
+git_path_string, sh_path_string, log_this_global, log_cumulative_global, git_logger = initialize()
 
 if not os.path.exists(git_path_string.strip('"')):
     logging.info("git not found @ %s. Please update %s" % (git_path_string, __file__))

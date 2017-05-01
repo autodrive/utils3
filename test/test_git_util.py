@@ -33,7 +33,7 @@ class TestGitUtil(MyTestGitUtilBase):
         if os.path.exists('.git') and os.path.exists('test'):
             input_file_name = os.path.join('test', input_file_name)
 
-        git_path, sh_path, log_this, log_cumulative = git_util.initialize(input_file_name)
+        git_path, sh_path, log_this, log_cumulative, git_logger = git_util.initialize(input_file_name)
         self.assertEqual('a', git_path)
         self.assertEqual('b', log_this)
         self.assertEqual('c', log_cumulative)
