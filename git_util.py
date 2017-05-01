@@ -127,9 +127,8 @@ def generate_config_file():
     # end prepare configuration object
 
     # write to configuration file
-    config_file = open(git_configuration['config_filename'], 'w')
-    config_parser.write(config_file)
-    config_file.close()
+    with open(git_configuration['config_filename'], 'w') as config_file:
+        config_parser.write(config_file)
 
 
 def recursively_find_git_path():
