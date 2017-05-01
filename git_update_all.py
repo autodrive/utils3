@@ -2,6 +2,7 @@
 # -*- coding: utf8 -*-
 import codecs
 import os
+import time
 
 import find_git_repos
 import git_util
@@ -94,10 +95,12 @@ def git_update_all(root_path=os.path.expanduser('~')):
     :return:
     """
 
+    start_time_sec = time.time()
     git_util.git_logger.info('git_update_all() : start')
     updater = GitRepositoryUpdater(root_path, 'config')
     updater.recursively_find_in()
     git_util.git_logger.info('git_update_all() : end')
+    git_util.git_logger.info('git_update_all() : elapsed time = %g (sec)' % (time.time() - start_time_sec))
 
 
 def is_ignore(repo_path, ignore_list=ignore_list_global):
