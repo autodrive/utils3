@@ -248,14 +248,14 @@ def get_current_branch_from_status():
     return status_lines[0].split()[-1]
 
 
-def get_git_status_lines():
-    status = get_git_status()
+def get_git_status_lines(b_verbose=False):
+    status = get_git_status(b_verbose)
     status_lines = status.splitlines()
     return status_lines
 
 
-def get_git_status():
-    status = git('status', False)
+def get_git_status(b_verbose=False):
+    status = git('status', b_verbose)
     return status
 
 
