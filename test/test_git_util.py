@@ -84,6 +84,12 @@ class TestGitUtil(MyTestGitUtilBase):
         # currently there is no remote exactly named 'upstream'
         self.assertFalse(result)
 
+    def test_url_is_remote(self):
+        self.assertTrue(git_util.url_is_remote('https://github.com/tensorflow/tensorflow'))
+        self.assertTrue(git_util.url_is_remote('git://github.com/schacon/ticgit.git'))
+        self.assertFalse(git_util.url_is_remote(r'file:///srv/git/project.git'))
+        self.assertFalse(git_util.url_is_remote(r'/srv/git/project/'))
+
 
 class TestGitUtilRemoteInfo(MyTestGitUtilBase):
     def setUp(self):
