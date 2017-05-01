@@ -415,8 +415,8 @@ def parse_fetch_all_result(text):
                 info_line_split = each_text_lines[2].strip().split()
                 b_update = ('..' in info_line_split[0]) and ('->' in info_line_split[-2])
                 upstream_branch = info_line_split[-1]
-                result_dict[remote_name]['update'] =b_update
-                result_dict[remote_name]['upstream branch'] =upstream_branch
+                result_dict[remote_name]['update'] = b_update
+                result_dict[remote_name]['upstream branch'] = upstream_branch
 
     return result_dict
 
@@ -443,6 +443,8 @@ def git_update_mine(path, branch='master', upstream_name='upstream'):
     # if submodule detected, recursively update
     result.append(update_submodule(path))
 
+    parsed_fetch_result_dict = parse_fetch_all_result(git_fetch_result_str)
+
     # if diff with origin/branch seems to have some content, rebase
     if get_behind_from_status(True):
         # https://felipec.wordpress.com/2013/09/01/advanced-git-concepts-the-upstream-tracking-branch/
@@ -450,12 +452,13 @@ def git_update_mine(path, branch='master', upstream_name='upstream'):
 
     if is_upstream_in_remote_list(path):
         if is_branch_in_remote_branch_list(branch, upstream_name):
-            upstream_branch = '%s/%s' % (upstream_name, branch)
-            diff_upstream_branch = git_diff(branch, upstream_branch)
-            result.append(diff_upstream_branch)
             # if diff with upstream/branch seems to have some content, try to rebase
-            if diff_upstream_branch:
-                result.append(git('rebase %s' % upstream_branch))
+            if parsed_fetch_result_dict.get('upstream', {'update':False})['update']:
+                result.append(git('rebase %s' % parsed_fetch_result_dict['upstream']['upstream branch']))
+                if 'upstream' not in parsed_fetch_result_dict:
+                    git_logger.debug("'upstream' not in parsed_fetch_result_dict")
+                    git_logger.debug("git_fetch_result_str = %s" % git_fetch_result_str)
+                    git_logger.debug("parsed_fetch_result_dict = %r" % parsed_fetch_result_dict)
 
     branch_master, git_path_full, result_restore = checkout_chdir(original_full_path, branch_backup)
     result += result_restore
