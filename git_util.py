@@ -421,12 +421,13 @@ def parse_fetch_all_result(text):
     return result_dict
 
 
-def git_update_mine(path, branch='master', upstream_name='upstream'):
+def git_update_mine(path, branch='master', upstream_name='upstream', submodule_info={}):
     """
 
     :param str path:
     :param str branch: 'master' by default
     :param str upstream_name: 'upstream' by default
+    :param dict(dict()) submodule_info: {} by default
     :return: responses from git
     :rtype: list(str)
     """
@@ -441,7 +442,8 @@ def git_update_mine(path, branch='master', upstream_name='upstream'):
     result.append(git_fetch_result_str)
 
     # if submodule detected, recursively update
-    result.append(update_submodule(path))
+    if submodule_info:
+        result.append(update_submodule(path))
 
     parsed_fetch_result_dict = parse_fetch_all_result(git_fetch_result_str)
 
@@ -556,25 +558,21 @@ def recursively_process_path(path):
                     update_repository(git_path)
 
 
-def update_repository(git_path, remote_list=('origin',), branch='master'):
+def update_repository(git_path, branch='master', submodule_info={}):
     """
     if SVN, rebase.  Otherwise fetch_all_and_rebase
 
     :param str git_path:
-    :param list[str] remote_list:
     :param str branch:
+    :param dict(dict()) submodule_info:
+
     :return:
     """
-    """
-    :param git_path:
-    :return:
-    """
-    result = None
 
     if git_has_svn_files(git_path):
         result = svn_rebase(git_path)
     else:
-        result = git_update_mine(git_path, branch)
+        result = git_update_mine(path=git_path, branch=branch, submodule_info=submodule_info)
 
     return result
 
@@ -628,6 +626,27 @@ def get_remote_info_from_git_config(repo_path):
     return result
 
 
+def get_remote_submodule_from_git_config(repo_path):
+    """
+    Return dictionary of remotes of a repository
+
+    {remote_name: {'url'          : url_to_remote_repository,
+                   'puttykeyfile' : puttykeyfile_name,
+                   'fetch'        : fetch_info}}
+
+    :param string repo_path:
+    :return: remote_info_dict
+    :rtype: dict
+
+    """
+    config_parser = get_git_config_parser(repo_path)
+
+    result_remote = get_section_key(config_parser, 'remote')
+    result_submodule = get_section_key(config_parser, 'submodule')
+
+    return result_remote, result_submodule
+
+
 def git_config_branch_info(repo_path):
     """
     Return dictionary of branches of a repository
@@ -652,7 +671,7 @@ def get_section_key(config_parser, section_key):
     section_info_dict = {}
     for section in sections:
         if section.startswith(section_key):
-            remote_section_name = section[6:].strip().strip('"')
+            remote_section_name = section.split()[1].strip().strip('"')
 
             section_info_dict[remote_section_name] = dict(config_parser.items(section))
     return section_info_dict
@@ -741,11 +760,7 @@ def get_submodule_tuple(path):
 def update_submodule(path):
     original_full_path = chdir(path)
 
-    result = ''
-
-    if detect_submodule_from_submodule():
-        # git_logger.info('update_submodule()')
-        result = git('submodule update --recursive', True)
+    result = git('submodule update --recursive', True)
 
     # change to stored
     os.chdir(original_full_path)
