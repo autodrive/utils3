@@ -630,7 +630,7 @@ def url_is_remote(url):
     # https://en.wikipedia.org/wiki/Uniform_Resource_Identifier#Syntax
 
     # https://git-scm.com/book/en/v2/Git-on-the-Server-The-Protocols
-    far_remote_scheme_tuple = ('https', 'git', 'ssh')
+    far_remote_scheme_tuple = ('https', 'git', 'ssh', 'http')
 
     return parsed_url.scheme in far_remote_scheme_tuple
 
