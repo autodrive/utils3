@@ -94,8 +94,10 @@ def git_update_all(root_path=os.path.expanduser('~')):
     :return:
     """
 
+    git_util.git_logger.info('git_update_all() : start')
     updater = GitRepositoryUpdater(root_path, 'config')
     updater.recursively_find_in()
+    git_util.git_logger.info('git_update_all() : end')
 
 
 def is_ignore(repo_path, ignore_list=ignore_list_global):
