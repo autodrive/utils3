@@ -1,3 +1,4 @@
+import logging
 import os
 import tempfile
 import unittest
@@ -38,6 +39,12 @@ class TestGitUtil(MyTestGitUtilBase):
         self.assertEqual('b', log_this)
         self.assertEqual('c', log_cumulative)
         self.assertEqual('d', sh_path)
+        self.assertIsInstance(git_logger, logging.Logger)
+
+    def test_initialize_logger(self):
+        log_file_name = 'temp.log'
+        logger = git_util.initialize_logger(log_file_name)
+        self.assertIsInstance(logger, logging.Logger)
 
     def test_is_host(self):
         b_host = git_util.is_host('github', self.repo_path)
