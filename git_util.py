@@ -238,7 +238,7 @@ def is_git_error(txt):
     return b_error
 
 
-def current_branch():
+def get_current_branch_from_status():
     status = git('status', False)
     status_lines = status.splitlines()
     return status_lines[0].split()[-1]
@@ -266,7 +266,7 @@ def fetch_and_pull(path):
 
     if remote_returns_something():
 
-        if current_branch() != 'master':
+        if get_current_branch_from_status() != 'master':
             # check out master command
             git('checkout master')
 
@@ -288,7 +288,7 @@ def fetch_and_rebase(path, remote='origin', branch='master'):
 
     if remote_returns_something():
 
-        if current_branch() != branch:
+        if get_current_branch_from_status() != branch:
             # check out master command
             git('checkout %s' % branch)
 
@@ -328,7 +328,7 @@ def git_switch_and_rebase_verbose(remote_name='origin', branch='master'):
     :rtype list[str]
     """
     result = []
-    branch_backup = current_branch()
+    branch_backup = get_current_branch_from_status()
 
     if branch_backup != branch:
         # check out master branch
@@ -358,7 +358,7 @@ def git_update_mine(path, branch='master', upstream_name='upstream'):
     result.append(update_submodule(path))
 
     result.append(git('status'))
-
+    get_current_branch_from_status()
 
     # https://felipec.wordpress.com/2013/09/01/advanced-git-concepts-the-upstream-tracking-branch/
     result.append(git('rebase @{u}'))
@@ -410,7 +410,7 @@ def chdir_checkout(path, branch):
     original_full_path = chdir(path)
 
     # save current branch
-    branch_backup = current_branch()
+    branch_backup = get_current_branch_from_status()
     result = []
     if branch_backup != branch:
         # check out master branch
@@ -422,7 +422,7 @@ def chdir_checkout(path, branch):
 def checkout_chdir(original_path, original_branch):
     result = []
     # save current branch
-    branch_backup = current_branch()
+    branch_backup = get_current_branch_from_status()
     if branch_backup != original_branch:
         # check out master branch
         result.append(git_checkout(original_branch))
