@@ -217,6 +217,8 @@ def git(cmd, b_verbose=True):
         with open(local_log_filename, 'r', encoding='utf8') as f:
             txt = f.read()
 
+    git_logger.info(txt)
+
     with open(long_log_filename, 'a') as f:
         f.write('%s\n%s\n' % (sh_cmd, txt))
 
