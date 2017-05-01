@@ -203,15 +203,20 @@ def git(cmd, b_verbose=True):
     # p = subprocess.Popen(sh_cmd, bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     # TODO : how to detect if a process hangs?
 
-    with open(local_log_filename, 'w') as f_log:
+    try:
+        with open(local_log_filename, 'w') as f_log:
+            txt = ''
 
-        # https://docs.python.org/3/library/subprocess.html#subprocess.run
-        completed_process = subprocess.run([sh_path_string, '-c', git_cmd, ], stdout=f_log, stderr=f_log)
+            # https://docs.python.org/3/library/subprocess.html#subprocess.run
+            completed_process = subprocess.run([sh_path_string, '-c', git_cmd, ], stdout=f_log, stderr=f_log)
 
-    txt = ''
-    if os.path.exists(local_log_filename):
-        with open(local_log_filename, 'r', encoding='utf8') as f:
-            txt = f.read()
+        if os.path.exists(local_log_filename):
+            with open(local_log_filename, 'r', encoding='utf8') as f:
+                txt = f.read()
+    except UnicodeDecodeError:
+        completed_process = subprocess.run([sh_path_string, '-c', git_cmd, ], stdout=subprocess.PIPE,
+                                           stderr=subprocess.PIPE)
+        txt = '%s %s' % (completed_process.stdout, completed_process.stderr)
 
     if b_verbose:
         # http://stackoverflow.com/questions/9348326/regex-find-word-in-the-string
@@ -239,9 +244,32 @@ def is_git_error(txt):
 
 
 def get_current_branch_from_status():
-    status = git('status', False)
-    status_lines = status.splitlines()
+    status_lines = get_git_status_lines()
     return status_lines[0].split()[-1]
+
+
+def get_git_status_lines(b_verbose=False):
+    status = get_git_status(b_verbose)
+    status_lines = status.splitlines()
+    return status_lines
+
+
+def get_git_status(b_verbose=False):
+    status = git('status', b_verbose)
+    return status
+
+
+def get_behind_from_status(b_verbose=False):
+    status_lines = get_git_status_lines(b_verbose)
+    # typical response:
+    # [0]: On branch master
+    # [1]: Your branch is behind 'origin/master' by 9832 commits, and can be fast-forwarded.
+    # [2]:   (use "git pull" to update your local branch)
+    # [3]: nothing to commit, working tree clean
+    second_line = status_lines[1].strip()
+    b_start = second_line.startswith('Your branch is behind')
+    b_end = second_line.endswith('can be fast-forwarded.')
+    return b_start and b_end
 
 
 def checkout_branch(branch_name):
@@ -341,6 +369,58 @@ def git_switch_and_rebase_verbose(remote_name='origin', branch='master'):
     return result
 
 
+def parse_fetch_all_result(text):
+    """
+    Possible input sting:
+ '''Fetching origin
+    From https:/github.com/abc/def
+       aaaaaaaaa..bbbbbbbbb  master     -> origin/master
+    Fetching upstream
+    From https:/github.com/def/abc
+       ccccccccc..ddddddddd  master     -> upstream/master'''
+
+    Possible return value:
+    {
+    'origin': {'update': True,
+                'url': 'https:/llmm.net/abc/def',
+                'upstream branch': 'origin/master'},
+    'upstream': {'update': True,
+            'url': 'https:/llmm.net/def/abc',
+            'upstream branch': 'upstream/master'}
+    }
+
+    :param str text:
+    :return:
+    :rtype: dict(dict('str':'str'|bool))
+    """
+    # possible fetch result:
+    # Fetching origin
+    # From <scheme>://<netloc>/<path>(.git)
+    #    50a80b6e6..b7d2fa35a  master     -> origin/master
+
+    result_dict = {}
+
+    text_list = re.split(r'Fetching\s?', text, re.MULTILINE)
+    for each_text in text_list:
+        if each_text:
+            each_text_lines = each_text.splitlines()
+            # [0] <remote>
+            # [1] From <scheme>://<netloc>/<path>(.git)
+            # [2]    50a80b6e6..b7d2fa35a  master     -> origin/master
+            remote_name = each_text_lines[0].strip()
+            result_dict[remote_name] = {'update': False}
+            if 1 < len(each_text_lines):
+                result_dict[remote_name]['url'] = each_text_lines[1].strip('From').strip()
+            if 2 < len(each_text_lines):
+                info_line_split = each_text_lines[2].strip().split()
+                b_update = ('..' in info_line_split[0]) and ('->' in info_line_split[-2])
+                upstream_branch = info_line_split[-1]
+                result_dict[remote_name]['update'] = b_update
+                result_dict[remote_name]['upstream branch'] = upstream_branch
+
+    return result_dict
+
+
 def git_update_mine(path, branch='master', upstream_name='upstream'):
     """
 
@@ -352,27 +432,33 @@ def git_update_mine(path, branch='master', upstream_name='upstream'):
     """
     branch_backup, original_full_path, result = chdir_checkout(path, branch)  # fetch all branches
     git_fetch_result_str = git_fetch_all()
+
+    # possible fetch result:
+    # Fetching origin
+    # From <scheme>://<netloc>/<path>(.git)
+    #    50a80b6e6..b7d2fa35a  master     -> origin/master
+
     result.append(git_fetch_result_str)
 
     # if submodule detected, recursively update
     result.append(update_submodule(path))
 
-    diff_origin_branch = git_diff_summary(branch, '@{u}')
-    result.append(diff_origin_branch)
+    parsed_fetch_result_dict = parse_fetch_all_result(git_fetch_result_str)
 
     # if diff with origin/branch seems to have some content, rebase
-    if diff_origin_branch:
+    if get_behind_from_status(True):
         # https://felipec.wordpress.com/2013/09/01/advanced-git-concepts-the-upstream-tracking-branch/
         result.append(git('rebase @{u}'))
 
     if is_upstream_in_remote_list(path):
         if is_branch_in_remote_branch_list(branch, upstream_name):
-            upstream_branch = '%s/%s' % (upstream_name, branch)
-            diff_upstream_branch = git_diff_summary(branch, upstream_branch)
-            result.append(diff_upstream_branch)
             # if diff with upstream/branch seems to have some content, try to rebase
-            if diff_upstream_branch:
-                result.append(git('rebase %s' % upstream_branch))
+            if parsed_fetch_result_dict.get('upstream', {'update':False})['update']:
+                result.append(git('rebase %s' % parsed_fetch_result_dict['upstream']['upstream branch']))
+                if 'upstream' not in parsed_fetch_result_dict:
+                    git_logger.debug("'upstream' not in parsed_fetch_result_dict")
+                    git_logger.debug("git_fetch_result_str = %s" % git_fetch_result_str)
+                    git_logger.debug("parsed_fetch_result_dict = %r" % parsed_fetch_result_dict)
 
     branch_master, git_path_full, result_restore = checkout_chdir(original_full_path, branch_backup)
     result += result_restore
@@ -382,6 +468,10 @@ def git_update_mine(path, branch='master', upstream_name='upstream'):
 
 def git_diff_summary(obj1, obj2):
     return git('diff --summary %s %s' % (obj1, obj2)).strip()
+
+
+def git_diff(obj1, obj2):
+    return git('diff %s %s' % (obj1, obj2)).strip()
 
 
 def fetch_all_and_rebase(path, branch='master'):
