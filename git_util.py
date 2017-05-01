@@ -244,9 +244,14 @@ def is_git_error(txt):
 
 
 def get_current_branch_from_status():
+    status_lines = get_git_status_lines()
+    return status_lines[0].split()[-1]
+
+
+def get_git_status_lines():
     status = get_git_status()
     status_lines = status.splitlines()
-    return status_lines[0].split()[-1]
+    return status_lines
 
 
 def get_git_status():
