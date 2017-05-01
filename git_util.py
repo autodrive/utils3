@@ -203,19 +203,20 @@ def git(cmd, b_verbose=True):
     # p = subprocess.Popen(sh_cmd, bufsize=-1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     # TODO : how to detect if a process hangs?
 
-    with open(local_log_filename, 'w') as f_log:
+    try:
+        with open(local_log_filename, 'w') as f_log:
+            txt = ''
 
-        # https://docs.python.org/3/library/subprocess.html#subprocess.run
-        completed_process = subprocess.run([sh_path_string, '-c', git_cmd, ], stdout=f_log, stderr=f_log)
+            # https://docs.python.org/3/library/subprocess.html#subprocess.run
+            completed_process = subprocess.run([sh_path_string, '-c', git_cmd, ], stdout=f_log, stderr=f_log)
 
-    txt = ''
-    if os.path.exists(local_log_filename):
-        try:
+        if os.path.exists(local_log_filename):
             with open(local_log_filename, 'r', encoding='utf8') as f:
                 txt = f.read()
-        except UnicodeDecodeError:
-            with open(local_log_filename, 'r', encoding='cp949') as f:
-                txt = f.read()
+    except UnicodeDecodeError:
+        completed_process = subprocess.run([sh_path_string, '-c', git_cmd, ], stdout=subprocess.PIPE,
+                                           stderr=subprocess.PIPE)
+        txt = '%s %s' % (completed_process.stdout, completed_process.stderr)
 
     if b_verbose:
         # http://stackoverflow.com/questions/9348326/regex-find-word-in-the-string
