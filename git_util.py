@@ -193,7 +193,6 @@ def git(cmd, b_verbose=True):
     """
 
     local_log_filename = log_this_global
-    long_log_filename = log_cumulative_global
 
     git_cmd = 'git %s' % cmd
     sh_cmd = build_sh_string(git_cmd)
