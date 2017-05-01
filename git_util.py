@@ -357,15 +357,22 @@ def git_update_mine(path, branch='master', upstream_name='upstream'):
     # if submodule detected, recursively update
     result.append(update_submodule(path))
 
-    result.append(git('status'))
-    get_current_branch_from_status()
+    diff_origin_branch = git('diff --summary %s @{u}' % branch).strip()
+    result.append(diff_origin_branch)
 
-    # https://felipec.wordpress.com/2013/09/01/advanced-git-concepts-the-upstream-tracking-branch/
-    result.append(git('rebase @{u}'))
+    # if diff with origin/branch seems to have some content, rebase
+    if diff_origin_branch:
+        # https://felipec.wordpress.com/2013/09/01/advanced-git-concepts-the-upstream-tracking-branch/
+        result.append(git('rebase @{u}'))
 
     if is_upstream_in_remote_list(path):
         if is_branch_in_remote_branch_list(branch, upstream_name):
-            result.append(git('rebase %s/%s' % (upstream_name, branch)))
+            upstream_branch = '%s/%s' % (upstream_name, branch)
+            diff_upstream_branch = git('diff --summary %s %s' % (branch, upstream_branch)).strip()
+            result.append(diff_upstream_branch)
+            # if diff with upstream/branch seems to have some content, try to rebase
+            if diff_upstream_branch:
+                result.append(git('rebase %s' % upstream_branch))
 
     branch_master, git_path_full, result_restore = checkout_chdir(original_full_path, branch_backup)
     result += result_restore
