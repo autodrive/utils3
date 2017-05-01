@@ -89,7 +89,7 @@ class TestGitUtil(MyTestGitUtilBase):
         self.assertFalse(result)
 
     def test_url_is_remote(self):
-        self.assertTrue(git_util.url_is_remote('https://github.com/tensorflow/tensorflow'))
+        self.assertTrue(git_util.url_is_remote('https:/github.com/def/abc'))
         self.assertTrue(git_util.url_is_remote('git://github.com/schacon/ticgit.git'))
         self.assertFalse(git_util.url_is_remote(r'file:///srv/git/project.git'))
         self.assertFalse(git_util.url_is_remote(r'/srv/git/project/'))
@@ -247,6 +247,36 @@ class TestGitUtilRemoteInfo(MyTestGitUtilBase):
         result_set = set(result_list)
 
         self.assertSetEqual(expected_set, result_set.intersection(expected_set))
+
+    def test_parse_fetch_all_result_00(self):
+            input_txt = '''Fetching origin
+From https:/github.com/abc/def
+   aaaaaaaaa..bbbbbbbbb  master     -> origin/master
+Fetching upstream
+From https:/github.com/def/abc
+   ccccccccc..ddddddddd  master     -> upstream/master
+    '''
+            result_dict = git_util.parse_fetch_all_result(input_txt)
+
+            expected_dict = {'origin': {'update': True,
+                                        'url': 'https:/github.com/abc/def',
+                                        'upstream branch': 'origin/master'},
+                             'upstream': {'update': True,
+                                          'url': 'https:/github.com/def/abc',
+                                          'upstream branch': 'upstream/master'}
+                             }
+            self.assertDictEqual(expected_dict, result_dict)
+
+    def test_parse_fetch_all_result_01(self):
+        input_txt = '''Fetching origin
+Fetching upstream
+'''
+        result_dict = git_util.parse_fetch_all_result(input_txt)
+
+        expected_dict = {'origin': {'update': False},
+                         'upstream': {'update': False}
+                         }
+        self.assertDictEqual(expected_dict, result_dict)
 
 
 if __name__ == '__main__':
