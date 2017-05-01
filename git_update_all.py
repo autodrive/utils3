@@ -2,6 +2,7 @@
 # -*- coding: utf8 -*-
 import codecs
 import os
+import time
 
 import find_git_repos
 import git_util
@@ -48,7 +49,7 @@ class GitRepositoryUpdater(find_git_repos.RecursiveGitRepositoryFinderBase):
                     path_string = repo_path.encode('utf8')
 
                 message_string = "*** updating %s ***" % path_string
-                print(message_string)
+                git_util.git_logger.info(message_string)
 
                 # if repository does not have the branch 'master' try to set a different one
                 branch_info_dict = git_util.git_config_branch_info(repo_path)
@@ -94,8 +95,12 @@ def git_update_all(root_path=os.path.expanduser('~')):
     :return:
     """
 
+    start_time_sec = time.time()
+    git_util.git_logger.info('git_update_all() : start')
     updater = GitRepositoryUpdater(root_path, 'config')
     updater.recursively_find_in()
+    git_util.git_logger.info('git_update_all() : end')
+    git_util.git_logger.info('git_update_all() : elapsed time = %g (sec)' % (time.time() - start_time_sec))
 
 
 def is_ignore(repo_path, ignore_list=ignore_list_global):
@@ -120,7 +125,7 @@ def is_ignore(repo_path, ignore_list=ignore_list_global):
     else:
         result = False
 
-    # print("%r, %r" % (repo_path, result))
+    # git_util.git_logger.info("%r, %r" % (repo_path, result))
 
     return result
 

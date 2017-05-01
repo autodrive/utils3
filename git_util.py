@@ -7,6 +7,8 @@ Will create a git_util.ini during import if missing (may take some time)
 includes other utility functions
 """
 import configparser as cp
+import logging
+import logging.handlers
 import os
 import re
 import subprocess
@@ -58,7 +60,37 @@ def initialize(git_config_filename=git_configuration['config_filename']):
     log_cumulative = config_parser.get(git_configuration['log_section'],
                                        git_configuration['log_section_cumulative'])
 
-    return git_path, sh_path, log_this, log_cumulative
+    git_logger_under_construction = initialize_logger(log_cumulative)
+
+    return git_path, sh_path, log_this, log_cumulative, git_logger_under_construction
+
+
+def initialize_logger(log_file_name):
+    # http://gyus.me/?p=418
+    # https://docs.python.org/3/library/logging.html
+
+    # make logger instance
+    git_logger_under_construction = logging.getLogger('git_logger')
+
+    # make log formatter
+    formatter = logging.Formatter('[%(levelname)s|%(filename)s:%(lineno)s] %(asctime)s > %(message)s')
+
+    # make handlers for stream and file
+    file_handler = logging.FileHandler(log_file_name)
+    stream_handler = logging.StreamHandler()
+
+    # apply formatter to handlers
+    file_handler.setFormatter(formatter)
+    stream_handler.setFormatter(formatter)
+
+    # add handlers to logger
+    git_logger_under_construction.addHandler(file_handler)
+    git_logger_under_construction.addHandler(stream_handler)
+
+    # set logging level
+    git_logger_under_construction.setLevel(logging.DEBUG)
+
+    return git_logger_under_construction
 
 
 def init_config_parser(git_config_filename):
@@ -95,9 +127,8 @@ def generate_config_file():
     # end prepare configuration object
 
     # write to configuration file
-    config_file = open(git_configuration['config_filename'], 'w')
-    config_parser.write(config_file)
-    config_file.close()
+    with open(git_configuration['config_filename'], 'w') as config_file:
+        config_parser.write(config_file)
 
 
 def recursively_find_git_path():
@@ -134,10 +165,10 @@ def recursively_find_sh_path():
     return sh_path
 
 
-git_path_string, sh_path_string, log_this_global, log_cumulative_global = initialize()
+git_path_string, sh_path_string, log_this_global, log_cumulative_global, git_logger = initialize()
 
 if not os.path.exists(git_path_string.strip('"')):
-    print("git not found @ %s. Please update %s" % (git_path_string, __file__))
+    git_logger.info("git not found @ %s. Please update %s" % (git_path_string, __file__))
     sys.exit(-1)
 
 
@@ -161,13 +192,11 @@ def git(cmd, b_verbose=True):
     """
 
     local_log_filename = log_this_global
-    long_log_filename = log_cumulative_global
 
     git_cmd = 'git %s' % cmd
-    sh_cmd = build_sh_string(git_cmd)
 
     if b_verbose:
-        print(sh_cmd)
+        git_logger.info(git_cmd)
 
     # ref : https://docs.python.org/2/library/subprocess.html#replacing-os-popen-os-popen2-os-popen3
     # ref : https://docs.python.org/2/library/subprocess.html#subprocess.PIPE
@@ -178,23 +207,38 @@ def git(cmd, b_verbose=True):
 
         # https://docs.python.org/3/library/subprocess.html#subprocess.run
         completed_process = subprocess.run([sh_path_string, '-c', git_cmd, ], stdout=f_log, stderr=f_log)
-    # os.system(sh_cmd)
 
     txt = ''
     if os.path.exists(local_log_filename):
         with open(local_log_filename, 'r', encoding='utf8') as f:
             txt = f.read()
 
-    with open(long_log_filename, 'a') as f:
-        f.write('%s\n%s\n' % (sh_cmd, txt))
-
     if b_verbose:
-        print(txt)
+        # http://stackoverflow.com/questions/9348326/regex-find-word-in-the-string
+        b_error = is_git_error(txt)
+        if b_error:
+            git_logger.error(txt)
+        else:
+            git_logger.info(txt)
 
     return txt
 
 
-def current_branch():
+def is_git_error(txt):
+    """
+    Whether response from the git command includes error
+
+    :param str txt:
+    :return:
+    :rtype: bool
+    """
+    b_error = re.findall(r'^(.*?(\bfatal\b)[^$]*)$', txt, re.I) \
+              or re.findall(r'^(.*?(\bCONFLICT\b)[^$]*)$', txt, re.I | re.MULTILINE) \
+              or re.findall(r'^(.*?(\berror\b)[^$]*)$', txt, re.I)
+    return b_error
+
+
+def get_current_branch_from_status():
     status = git('status', False)
     status_lines = status.splitlines()
     return status_lines[0].split()[-1]
@@ -209,23 +253,33 @@ def checkout_master():
 
 
 def fetch_and_pull(path):
+    """
+
+    :param str path:
+    :return:
+    :rtype: tuple(str)
+    """
     # change to path
     original_full_path = chdir(path)
 
+    result_list = []
+
     if remote_returns_something():
 
-        if current_branch() != 'master':
+        if get_current_branch_from_status() != 'master':
             # check out master command
             git('checkout master')
 
         # fetch command
-        git('fetch')
+        result_list.append(git('fetch'))
 
         # execute pull command
-        git('pull --verbose --progress')
+        result_list.append(git('pull --verbose --progress'))
 
     # change to stored
     os.chdir(original_full_path)
+
+    return tuple(result_list)
 
 
 def fetch_and_rebase(path, remote='origin', branch='master'):
@@ -234,7 +288,7 @@ def fetch_and_rebase(path, remote='origin', branch='master'):
 
     if remote_returns_something():
 
-        if current_branch() != branch:
+        if get_current_branch_from_status() != branch:
             # check out master command
             git('checkout %s' % branch)
 
@@ -250,6 +304,10 @@ def fetch_and_rebase(path, remote='origin', branch='master'):
 
 def git_fetch(remote_name):
     return git('fetch %s' % remote_name)
+
+
+def git_fetch_all():
+    return git_fetch('--all')
 
 
 def git_rebase_verbose(remote, branch):
@@ -270,7 +328,7 @@ def git_switch_and_rebase_verbose(remote_name='origin', branch='master'):
     :rtype list[str]
     """
     result = []
-    branch_backup = current_branch()
+    branch_backup = get_current_branch_from_status()
 
     if branch_backup != branch:
         # check out master branch
@@ -293,22 +351,37 @@ def git_update_mine(path, branch='master', upstream_name='upstream'):
     :rtype: list(str)
     """
     branch_backup, original_full_path, result = chdir_checkout(path, branch)  # fetch all branches
-    result.append(git('fetch --all'))
+    git_fetch_result_str = git_fetch_all()
+    result.append(git_fetch_result_str)
 
     # if submodule detected, recursively update
     result.append(update_submodule(path))
 
-    # https://felipec.wordpress.com/2013/09/01/advanced-git-concepts-the-upstream-tracking-branch/
-    result.append(git('rebase @{u}'))
+    diff_origin_branch = git_diff_summary(branch, '@{u}')
+    result.append(diff_origin_branch)
+
+    # if diff with origin/branch seems to have some content, rebase
+    if diff_origin_branch:
+        # https://felipec.wordpress.com/2013/09/01/advanced-git-concepts-the-upstream-tracking-branch/
+        result.append(git('rebase @{u}'))
 
     if is_upstream_in_remote_list(path):
         if is_branch_in_remote_branch_list(branch, upstream_name):
-            result.append(git('rebase %s/%s' % (upstream_name, branch)))
+            upstream_branch = '%s/%s' % (upstream_name, branch)
+            diff_upstream_branch = git_diff_summary(branch, upstream_branch)
+            result.append(diff_upstream_branch)
+            # if diff with upstream/branch seems to have some content, try to rebase
+            if diff_upstream_branch:
+                result.append(git('rebase %s' % upstream_branch))
 
     branch_master, git_path_full, result_restore = checkout_chdir(original_full_path, branch_backup)
     result += result_restore
 
     return result
+
+
+def git_diff_summary(obj1, obj2):
+    return git('diff --summary %s %s' % (obj1, obj2)).strip()
 
 
 def fetch_all_and_rebase(path, branch='master'):
@@ -321,7 +394,7 @@ def fetch_all_and_rebase(path, branch='master'):
     """
 
     branch_backup, original_full_path, result = chdir_checkout(path, branch)# fetch all branches
-    result.append(git('fetch --all'))
+    result.append(git_fetch_all())
 
     # https://felipec.wordpress.com/2013/09/01/advanced-git-concepts-the-upstream-tracking-branch/
     result.append(git('rebase @{u}'))
@@ -348,7 +421,7 @@ def chdir_checkout(path, branch):
     original_full_path = chdir(path)
 
     # save current branch
-    branch_backup = current_branch()
+    branch_backup = get_current_branch_from_status()
     result = []
     if branch_backup != branch:
         # check out master branch
@@ -360,7 +433,7 @@ def chdir_checkout(path, branch):
 def checkout_chdir(original_path, original_branch):
     result = []
     # save current branch
-    branch_backup = current_branch()
+    branch_backup = get_current_branch_from_status()
     if branch_backup != original_branch:
         # check out master branch
         result.append(git_checkout(original_branch))
@@ -377,11 +450,11 @@ def recursively_process_path(path):
             if '$RECYCLE.BIN' not in root:
                 if os.path.exists(os.path.join(os.path.abspath(root), ".git", "index")):
                     git_path = os.path.abspath(root)
-                    print(time.asctime(), git_path)
+                    git_logger.info(time.asctime(), git_path)
                     if "tensorflow" == os.path.split(git_path)[-1] and 'DeepLearningStudyKr' not in git_path:
-                        print('tensorflow '.ljust(80, '='))
+                        git_logger.info('tensorflow '.ljust(80, '='))
                     if "llvm" == os.path.split(git_path)[-1]:
-                        print('llvm '.ljust(80, '+'))
+                        git_logger.info('llvm '.ljust(80, '+'))
                     # todo : if any submodule exist, fetch may be more effective than update?
                     update_submodule(git_path)
 
@@ -552,7 +625,7 @@ def is_host(host_url, repo_path):
 
 
 def select_path(arg, directory_name, file_name):
-    print("please do not use %" % (__file__ + '.' + 'select_path()'))
+    git_logger.info("please do not use %" % (__file__ + '.' + 'select_path()'))
     raise DeprecationWarning
 
 
@@ -581,7 +654,7 @@ def update_submodule(path):
     result = ''
 
     if detect_submodule():
-        # print('update_submodule()')
+        # git_logger.info('update_submodule()')
         result = git('submodule update --recursive', True)
 
     # change to stored
@@ -630,9 +703,9 @@ def url_is_remote(url):
     # https://en.wikipedia.org/wiki/Uniform_Resource_Identifier#Syntax
 
     # https://git-scm.com/book/en/v2/Git-on-the-Server-The-Protocols
-    far_remote_scheme_tuple = ('https', 'git', 'ssh')
+    far_remote_scheme_set = {'https', 'git', 'ssh', 'http'}
 
-    return parsed_url.scheme in far_remote_scheme_tuple
+    return parsed_url.scheme in far_remote_scheme_set
 
 
 def get_remote_url_list(remote_info):

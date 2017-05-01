@@ -15,8 +15,11 @@ class TestGitUpdateAll(unittest.TestCase):
         expected_base_set = set(['.cache', '.git', '$RECYCLE.BIN',])
 
         # better way to test than this?
-        with open(ignore_path, 'rt', encoding='utf8') as input_file:
-            expected_set = expected_base_set.union(set([line.strip() for line in input_file]))
+        if os.path.exists(ignore_path):
+            with open(ignore_path, 'rt', encoding='utf8') as input_file:
+                expected_set = expected_base_set.union(set([line.strip() for line in input_file]))
+        else:
+            expected_set = expected_base_set
         self.assertSetEqual(expected_set, result_set)
 
     def test_init_ignore_blank_line(self):

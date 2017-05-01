@@ -71,18 +71,18 @@ class ApplySSHbitbucket(find_git_repos.RecursiveGitRepositoryFinderBase):
                     ssh_url = self.convert_url_https_to_ssh(remote_url)
                     git_cmd, git_cmd_push = self.get_git_cmd_remote_set_url(remote_name, ssh_url, remote_url)
                     if not self.b_arm:
-                        print(remote_name, remote_url, ssh_url)
-                        print(git_cmd)
-                        print(git_cmd_push)
+                        git_util.git_logger.info(remote_name, remote_url, ssh_url)
+                        git_util.git_logger.info(git_cmd)
+                        git_util.git_logger.info(git_cmd_push)
                     else:
-                        print("** updating %r **" % repo_path)
-                        print(remote_name, remote_url)
+                        git_util.git_logger.info("** updating %r **" % repo_path)
+                        git_util.git_logger.info(remote_name, remote_url)
                         git_util.git(git_cmd)
                         git_util.git(git_cmd_push)
                     os.chdir(self.start_path)
                 elif remote_url is not None:
                     if ('@github.com' in remote_url) and ('http' in remote_url):
-                        print('skipping remote_url = %s' % remote_url)
+                        git_util.git_logger.info('skipping remote_url = %s' % remote_url)
 
     @staticmethod
     def get_git_cmd_remote_set_url(remote_name, ssh_url, https_url):

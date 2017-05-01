@@ -1,9 +1,7 @@
+import logging
 import os
-import random
-import re
 import tempfile
 import unittest
-from unittest import TestCase
 
 current_path = os.path.abspath(os.curdir)
 os.chdir(os.pardir)
@@ -36,11 +34,17 @@ class TestGitUtil(MyTestGitUtilBase):
         if os.path.exists('.git') and os.path.exists('test'):
             input_file_name = os.path.join('test', input_file_name)
 
-        git_path, sh_path, log_this, log_cumulative = git_util.initialize(input_file_name)
+        git_path, sh_path, log_this, log_cumulative, git_logger = git_util.initialize(input_file_name)
         self.assertEqual('a', git_path)
         self.assertEqual('b', log_this)
         self.assertEqual('c', log_cumulative)
         self.assertEqual('d', sh_path)
+        self.assertIsInstance(git_logger, logging.Logger)
+
+    def test_initialize_logger(self):
+        log_file_name = 'temp.log'
+        logger = git_util.initialize_logger(log_file_name)
+        self.assertIsInstance(logger, logging.Logger)
 
     def test_is_host(self):
         b_host = git_util.is_host('github', self.repo_path)
@@ -49,14 +53,18 @@ class TestGitUtil(MyTestGitUtilBase):
     def test_remote_info(self):
         dict_hist_info = git_util.get_remote_info_from_git_config(self.repo_path)
         self.assertTrue(dict_hist_info)
-        expected = eval(open(os.path.join(self.test_path, 'test_case_host_info.txt'), 'r').read().strip())
+        expected = {}
+
+        filename = os.path.join(self.test_path, 'test_case_host_info.txt')
+        if os.path.exists(filename):
+            expected = eval(open(filename, 'r').read().strip())
         self.assertDictEqual(expected, dict_hist_info)
 
     def test_is_host2(self):
         input_file_name = 'test_case_is_host.txt'
         repo_dir = os.path.abspath(os.pardir)
 
-        print('test_is_host2()', os.getcwd())
+        git_util.git_logger.info('%s %s' % ('test_is_host2()', os.getcwd()))
         if not os.path.exists(input_file_name):
             input_file_name = os.path.join('test', input_file_name)
             repo_dir = os.getcwd()
@@ -79,6 +87,12 @@ class TestGitUtil(MyTestGitUtilBase):
         result = git_util.is_upstream_in_remote_list(os.path.abspath(os.curdir), b_verbose=False)
         # currently there is no remote exactly named 'upstream'
         self.assertFalse(result)
+
+    def test_url_is_remote(self):
+        self.assertTrue(git_util.url_is_remote('https://github.com/tensorflow/tensorflow'))
+        self.assertTrue(git_util.url_is_remote('git://github.com/schacon/ticgit.git'))
+        self.assertFalse(git_util.url_is_remote(r'file:///srv/git/project.git'))
+        self.assertFalse(git_util.url_is_remote(r'/srv/git/project/'))
 
 
 class TestGitUtilRemoteInfo(MyTestGitUtilBase):
@@ -152,7 +166,7 @@ class TestGitUtilRemoteInfo(MyTestGitUtilBase):
 
     def test_remote_info_dict_to_url_tuple(self):
         result_remote_url_tuple = git_util.remote_info_dict_to_url_tuple(self.expected_remote_info_dict)
-        # print(result_remote_url_tuple)
+        # git_util.git_logger.info(result_remote_url_tuple)
         expected_remote_url_tuple = ((self.remote_name_01, self.url_01),
                                      (self.remote_name_02, self.url_02))
 
@@ -227,125 +241,13 @@ class TestGitUtilRemoteInfo(MyTestGitUtilBase):
         }
         self.assertFalse(git_util.get_far_remote_name_list(local_info_dict))
 
-    def test_get_tag_list(self):
+    def test_get_tag_local_list(self):
         result_list = git_util.get_tag_local_list()
         expected_set = {'20170313', '20170226'}
         result_set = set(result_list)
 
         self.assertSetEqual(expected_set, result_set.intersection(expected_set))
 
-    def test_get_remote_branch_list(self):
-        result_list = git_util.get_remote_branch_list()
-
-        filename = 'remote_branch_list.txt'
-        pattern_str = 'heads'
-
-        try:
-            with open(filename, 'r') as f:
-                tags_list = [tag_str.strip() for tag_str in f.readlines()]
-
-        except IOError as e:
-            # file might be missing
-            # make a list from git ls-remote
-            result_txt = git_util.git('ls-remote --%s' % pattern_str)
-            result_line_list = result_txt.splitlines()
-
-            if result_line_list[0].startswith('From '):
-                result_line_list.pop(0)
-
-            tags_list = []
-            with open(filename, 'w') as f_out:
-
-                # build list of expected tags
-                for line_txt in result_line_list:
-                    line_split_list = line_txt.split()
-                    # filter remote tags
-                    filtered_line_split_list = [txt for txt in line_split_list if
-                                                txt.startswith('refs/%s/' % pattern_str)
-                                                and (not txt.endswith('^{}'))]
-                    if filtered_line_split_list:
-                        for tag_item in filtered_line_split_list:
-                            tag_items = tag_item.split('/')[2:]
-                            tag_txt = '/'.join(tag_items)
-                            f_out.write(tag_txt + '\n')
-                            tags_list.append(tag_txt)
-        # finished making a list from git ls-remote
-
-        expected_set = set(tags_list)
-        self.assertSetEqual(expected_set, set(result_list))
-
-    def test_get_remote_tag_list(self):
-        result_list = git_util.get_remote_tag_list()
-        try:
-            with open('tags_list.txt', 'r') as f:
-                tags_list = [tag_str.strip() for tag_str in f.readlines()]
-
-        except IOError as e:
-            # file might be missing
-            # make a list from git ls-remote
-            result_txt = git_util.git('ls-remote --tags')
-            result_line_list = result_txt.splitlines()
-
-            if result_line_list[0].startswith('From '):
-                result_line_list.pop(0)
-
-            tags_list = []
-            with open('tags_list.txt', 'w') as f_out:
-
-                # build list of expected tags
-                for line_txt in result_line_list:
-                    line_split_list = line_txt.split()
-                    # filter remote tags
-                    filtered_line_split_list = [txt for txt in line_split_list if txt.startswith('refs/tags/')
-                                                and (not txt.endswith('^{}'))]
-                    if filtered_line_split_list:
-                        for tag_item in filtered_line_split_list:
-                            tag_items = tag_item.split('/')[2:]
-                            tag_txt = '/'.join(tag_items)
-                            f_out.write(tag_txt + '\n')
-                            tags_list.append(tag_txt)
-        # finished making a list from git ls-remote
-
-        expected_set = set(tags_list)
-        self.assertSetEqual(expected_set, set(result_list))
-
-    def test_git_tag_local_repo(self):
-        tag_name = 'del_this_%d' % random.randint(1, 100)
-        repo_name = 'origin'
-        result_dict = git_util.git_tag_local_repo(tag_name, repo_name)
-
-        self.assertFalse(re.findall('Permission to .+? denied to .+?$', result_dict['remote']))
-
-        try:
-            local_tag_list = git_util.get_tag_local_list()
-            self.assertTrue(tag_name in local_tag_list, msg='%s not in local tag list' % tag_name)
-
-            repo_tag_list = git_util.get_remote_tag_list(repo_name)
-            self.assertTrue(tag_name in repo_tag_list, msg='%s not in repo %s tag list' % (tag_name, repo_name))
-        except AssertionError as e:
-            git_util.delete_a_tag_local_repo(tag_name, repo_name)
-            raise e
-
-        git_util.delete_a_tag_local_repo(tag_name, repo_name)
-
-    def test_is_branch_in_remote_branch_list(self):
-        self.assertTrue(git_util.is_branch_in_remote_branch_list('master', 'origin', False))
-        self.assertFalse(git_util.is_branch_in_remote_branch_list('__m_a_s_t_e_r__', 'origin', False))
-
 
 if __name__ == '__main__':
     unittest.main()
-
-
-class TestRecursivelyFindPath(TestCase):
-    def test_recursively_find_git_path(self):
-        git_path = git_util.recursively_find_git_path()
-        if git_path:
-            self.assertTrue(os.path.exists(git_path))
-            self.assertTrue(os.path.isfile(git_path))
-
-    def test_recursively_find_sh_path(self):
-        sh_path = git_util.recursively_find_sh_path()
-        if sh_path:
-            self.assertTrue(os.path.exists(sh_path))
-            self.assertTrue(os.path.isfile(sh_path))
