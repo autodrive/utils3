@@ -49,7 +49,11 @@ class TestGitUtil(MyTestGitUtilBase):
     def test_remote_info(self):
         dict_hist_info = git_util.get_remote_info_from_git_config(self.repo_path)
         self.assertTrue(dict_hist_info)
-        expected = eval(open(os.path.join(self.test_path, 'test_case_host_info.txt'), 'r').read().strip())
+        expected = {}
+
+        filename = os.path.join(self.test_path, 'test_case_host_info.txt')
+        if os.path.exists(filename):
+            expected = eval(open(filename, 'r').read().strip())
         self.assertDictEqual(expected, dict_hist_info)
 
     def test_is_host2(self):
@@ -79,6 +83,12 @@ class TestGitUtil(MyTestGitUtilBase):
         result = git_util.is_upstream_in_remote_list(os.path.abspath(os.curdir), b_verbose=False)
         # currently there is no remote exactly named 'upstream'
         self.assertFalse(result)
+
+    def test_url_is_remote(self):
+        self.assertTrue(git_util.url_is_remote('https://github.com/tensorflow/tensorflow'))
+        self.assertTrue(git_util.url_is_remote('git://github.com/schacon/ticgit.git'))
+        self.assertFalse(git_util.url_is_remote(r'file:///srv/git/project.git'))
+        self.assertFalse(git_util.url_is_remote(r'/srv/git/project/'))
 
 
 class TestGitUtilRemoteInfo(MyTestGitUtilBase):
