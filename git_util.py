@@ -380,6 +380,12 @@ def git_update_mine(path, branch='master', upstream_name='upstream'):
     """
     branch_backup, original_full_path, result = chdir_checkout(path, branch)  # fetch all branches
     git_fetch_result_str = git_fetch_all()
+
+    # possible fetch result:
+    # Fetching origin
+    # From <scheme>://<netloc>/<path>(.git)
+    #    50a80b6e6..b7d2fa35a  master     -> origin/master
+
     result.append(git_fetch_result_str)
 
     # if submodule detected, recursively update
