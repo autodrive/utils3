@@ -238,7 +238,7 @@ def is_git_error(txt):
     return b_error
 
 
-def current_branch():
+def get_current_branch_from_status():
     status = git('status', False)
     status_lines = status.splitlines()
     return status_lines[0].split()[-1]
@@ -253,23 +253,33 @@ def checkout_master():
 
 
 def fetch_and_pull(path):
+    """
+
+    :param str path:
+    :return:
+    :rtype: tuple(str)
+    """
     # change to path
     original_full_path = chdir(path)
 
+    result_list = []
+
     if remote_returns_something():
 
-        if current_branch() != 'master':
+        if get_current_branch_from_status() != 'master':
             # check out master command
             git('checkout master')
 
         # fetch command
-        git('fetch')
+        result_list.append(git('fetch'))
 
         # execute pull command
-        git('pull --verbose --progress')
+        result_list.append(git('pull --verbose --progress'))
 
     # change to stored
     os.chdir(original_full_path)
+
+    return tuple(result_list)
 
 
 def fetch_and_rebase(path, remote='origin', branch='master'):
@@ -278,7 +288,7 @@ def fetch_and_rebase(path, remote='origin', branch='master'):
 
     if remote_returns_something():
 
-        if current_branch() != branch:
+        if get_current_branch_from_status() != branch:
             # check out master command
             git('checkout %s' % branch)
 
@@ -294,6 +304,10 @@ def fetch_and_rebase(path, remote='origin', branch='master'):
 
 def git_fetch(remote_name):
     return git('fetch %s' % remote_name)
+
+
+def git_fetch_all():
+    return git_fetch('--all')
 
 
 def git_rebase_verbose(remote, branch):
@@ -314,7 +328,7 @@ def git_switch_and_rebase_verbose(remote_name='origin', branch='master'):
     :rtype list[str]
     """
     result = []
-    branch_backup = current_branch()
+    branch_backup = get_current_branch_from_status()
 
     if branch_backup != branch:
         # check out master branch
@@ -337,25 +351,37 @@ def git_update_mine(path, branch='master', upstream_name='upstream'):
     :rtype: list(str)
     """
     branch_backup, original_full_path, result = chdir_checkout(path, branch)  # fetch all branches
-    result.append(git('fetch --all'))
+    git_fetch_result_str = git_fetch_all()
+    result.append(git_fetch_result_str)
 
     # if submodule detected, recursively update
     result.append(update_submodule(path))
 
-    result.append(git('status'))
+    diff_origin_branch = git_diff_summary(branch, '@{u}')
+    result.append(diff_origin_branch)
 
-
-    # https://felipec.wordpress.com/2013/09/01/advanced-git-concepts-the-upstream-tracking-branch/
-    result.append(git('rebase @{u}'))
+    # if diff with origin/branch seems to have some content, rebase
+    if diff_origin_branch:
+        # https://felipec.wordpress.com/2013/09/01/advanced-git-concepts-the-upstream-tracking-branch/
+        result.append(git('rebase @{u}'))
 
     if is_upstream_in_remote_list(path):
         if is_branch_in_remote_branch_list(branch, upstream_name):
-            result.append(git('rebase %s/%s' % (upstream_name, branch)))
+            upstream_branch = '%s/%s' % (upstream_name, branch)
+            diff_upstream_branch = git_diff_summary(branch, upstream_branch)
+            result.append(diff_upstream_branch)
+            # if diff with upstream/branch seems to have some content, try to rebase
+            if diff_upstream_branch:
+                result.append(git('rebase %s' % upstream_branch))
 
     branch_master, git_path_full, result_restore = checkout_chdir(original_full_path, branch_backup)
     result += result_restore
 
     return result
+
+
+def git_diff_summary(obj1, obj2):
+    return git('diff --summary %s %s' % (obj1, obj2)).strip()
 
 
 def fetch_all_and_rebase(path, branch='master'):
@@ -368,7 +394,7 @@ def fetch_all_and_rebase(path, branch='master'):
     """
 
     branch_backup, original_full_path, result = chdir_checkout(path, branch)# fetch all branches
-    result.append(git('fetch --all'))
+    result.append(git_fetch_all())
 
     # https://felipec.wordpress.com/2013/09/01/advanced-git-concepts-the-upstream-tracking-branch/
     result.append(git('rebase @{u}'))
@@ -395,7 +421,7 @@ def chdir_checkout(path, branch):
     original_full_path = chdir(path)
 
     # save current branch
-    branch_backup = current_branch()
+    branch_backup = get_current_branch_from_status()
     result = []
     if branch_backup != branch:
         # check out master branch
@@ -407,7 +433,7 @@ def chdir_checkout(path, branch):
 def checkout_chdir(original_path, original_branch):
     result = []
     # save current branch
-    branch_backup = current_branch()
+    branch_backup = get_current_branch_from_status()
     if branch_backup != original_branch:
         # check out master branch
         result.append(git_checkout(original_branch))
