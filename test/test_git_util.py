@@ -64,7 +64,7 @@ class TestGitUtil(MyTestGitUtilBase):
         input_file_name = 'test_case_is_host.txt'
         repo_dir = os.path.abspath(os.pardir)
 
-        git_util.logging.info('test_is_host2()', os.getcwd())
+        git_util.git_logger.info('%s %s' % ('test_is_host2()', os.getcwd()))
         if not os.path.exists(input_file_name):
             input_file_name = os.path.join('test', input_file_name)
             repo_dir = os.getcwd()
@@ -166,7 +166,7 @@ class TestGitUtilRemoteInfo(MyTestGitUtilBase):
 
     def test_remote_info_dict_to_url_tuple(self):
         result_remote_url_tuple = git_util.remote_info_dict_to_url_tuple(self.expected_remote_info_dict)
-        # git_util.logging.info(result_remote_url_tuple)
+        # git_util.git_logger.info(result_remote_url_tuple)
         expected_remote_url_tuple = ((self.remote_name_01, self.url_01),
                                      (self.remote_name_02, self.url_02))
 

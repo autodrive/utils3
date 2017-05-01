@@ -169,7 +169,7 @@ def recursively_find_sh_path():
 git_path_string, sh_path_string, log_this_global, log_cumulative_global, git_logger = initialize()
 
 if not os.path.exists(git_path_string.strip('"')):
-    logging.info("git not found @ %s. Please update %s" % (git_path_string, __file__))
+    git_logger.info("git not found @ %s. Please update %s" % (git_path_string, __file__))
     sys.exit(-1)
 
 
@@ -199,7 +199,7 @@ def git(cmd, b_verbose=True):
     sh_cmd = build_sh_string(git_cmd)
 
     if b_verbose:
-        logging.info(sh_cmd)
+        git_logger.info(sh_cmd)
 
     # ref : https://docs.python.org/2/library/subprocess.html#replacing-os-popen-os-popen2-os-popen3
     # ref : https://docs.python.org/2/library/subprocess.html#subprocess.PIPE
@@ -221,7 +221,7 @@ def git(cmd, b_verbose=True):
         f.write('%s\n%s\n' % (sh_cmd, txt))
 
     if b_verbose:
-        logging.info(txt)
+        git_logger.info(txt)
 
     return txt
 
@@ -409,11 +409,11 @@ def recursively_process_path(path):
             if '$RECYCLE.BIN' not in root:
                 if os.path.exists(os.path.join(os.path.abspath(root), ".git", "index")):
                     git_path = os.path.abspath(root)
-                    logging.info(time.asctime(), git_path)
+                    git_logger.info(time.asctime(), git_path)
                     if "tensorflow" == os.path.split(git_path)[-1] and 'DeepLearningStudyKr' not in git_path:
-                        logging.info('tensorflow '.ljust(80, '='))
+                        git_logger.info('tensorflow '.ljust(80, '='))
                     if "llvm" == os.path.split(git_path)[-1]:
-                        logging.info('llvm '.ljust(80, '+'))
+                        git_logger.info('llvm '.ljust(80, '+'))
                     # todo : if any submodule exist, fetch may be more effective than update?
                     update_submodule(git_path)
 
@@ -584,7 +584,7 @@ def is_host(host_url, repo_path):
 
 
 def select_path(arg, directory_name, file_name):
-    logging.info("please do not use %" % (__file__ + '.' + 'select_path()'))
+    git_logger.info("please do not use %" % (__file__ + '.' + 'select_path()'))
     raise DeprecationWarning
 
 
@@ -613,7 +613,7 @@ def update_submodule(path):
     result = ''
 
     if detect_submodule():
-        # logging.info('update_submodule()')
+        # git_logger.info('update_submodule()')
         result = git('submodule update --recursive', True)
 
     # change to stored

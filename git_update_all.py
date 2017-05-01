@@ -48,7 +48,7 @@ class GitRepositoryUpdater(find_git_repos.RecursiveGitRepositoryFinderBase):
                     path_string = repo_path.encode('utf8')
 
                 message_string = "*** updating %s ***" % path_string
-                git_util.logging.info(message_string)
+                git_util.git_logger.info(message_string)
 
                 # if repository does not have the branch 'master' try to set a different one
                 branch_info_dict = git_util.git_config_branch_info(repo_path)
@@ -120,7 +120,7 @@ def is_ignore(repo_path, ignore_list=ignore_list_global):
     else:
         result = False
 
-    # git_util.logging.info("%r, %r" % (repo_path, result))
+    # git_util.git_logger.info("%r, %r" % (repo_path, result))
 
     return result
 

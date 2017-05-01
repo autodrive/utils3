@@ -21,7 +21,7 @@ class GrepRemoteRepo(find_git_repos.RecursiveGitRepositoryFinderBase):
             # get remote info dictionary
             remote_info_dict_dict = git_util.get_remote_info_from_git_config(repo_path)
             for remote_name, remot_info_dict in remote_info_dict_dict.items():
-                git_util.logging.info((repo_path, remote_name, remot_info_dict.get('url', "No URL")))
+                git_util.git_logger.info((repo_path, remote_name, remot_info_dict.get('url', "No URL")))
 
 
 if __name__ == '__main__':
