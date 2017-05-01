@@ -217,13 +217,14 @@ def git(cmd, b_verbose=True):
         with open(local_log_filename, 'r', encoding='utf8') as f:
             txt = f.read()
 
-    git_logger.info(txt)
-
-    with open(long_log_filename, 'a') as f:
-        f.write('%s\n%s\n' % (sh_cmd, txt))
-
     if b_verbose:
-        git_logger.info(txt)
+        # http://stackoverflow.com/questions/9348326/regex-find-word-in-the-string
+        if re.findall(r'^(.*?(\bfatal\b)[^$]*)$', txt, re.I) \
+                or re.findall(r'^(.*?(\bCONFLICT\b)[^$]*)$', txt, re.I | re.MULTILINE) \
+                or re.findall(r'^(.*?(\berror\b)[^$]*)$', txt, re.I):
+            git_logger.error(txt)
+        else:
+            git_logger.info(txt)
 
     return txt
 
