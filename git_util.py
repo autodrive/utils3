@@ -253,8 +253,16 @@ def checkout_master():
 
 
 def fetch_and_pull(path):
+    """
+
+    :param str path:
+    :return:
+    :rtype: tuple(str)
+    """
     # change to path
     original_full_path = chdir(path)
+
+    result_list = []
 
     if remote_returns_something():
 
@@ -263,13 +271,15 @@ def fetch_and_pull(path):
             git('checkout master')
 
         # fetch command
-        git('fetch')
+        result_list.append(git('fetch'))
 
         # execute pull command
-        git('pull --verbose --progress')
+        result_list.append(git('pull --verbose --progress'))
 
     # change to stored
     os.chdir(original_full_path)
+
+    return tuple(result_list)
 
 
 def fetch_and_rebase(path, remote='origin', branch='master'):
