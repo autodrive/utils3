@@ -7,6 +7,8 @@ Will create a git_util.ini during import if missing (may take some time)
 includes other utility functions
 """
 import configparser as cp
+import logging
+import logging.handlers
 import os
 import re
 import subprocess
@@ -58,7 +60,37 @@ def initialize(git_config_filename=git_configuration['config_filename']):
     log_cumulative = config_parser.get(git_configuration['log_section'],
                                        git_configuration['log_section_cumulative'])
 
-    return git_path, sh_path, log_this, log_cumulative
+    git_logger_under_construction = initialize_logger(log_cumulative)
+
+    return git_path, sh_path, log_this, log_cumulative, git_logger_under_construction
+
+
+def initialize_logger(log_file_name):
+    # http://gyus.me/?p=418
+    # https://docs.python.org/3/library/logging.html
+
+    # make logger instance
+    git_logger_under_construction = logging.getLogger('git_logger')
+
+    # make log formatter
+    formatter = logging.Formatter('[%(levelname)s|%(filename)s:%(lineno)s] %(asctime)s > %(message)s')
+
+    # make handlers for stream and file
+    file_handler = logging.FileHandler(log_file_name)
+    stream_handler = logging.StreamHandler()
+
+    # apply formatter to handlers
+    file_handler.setFormatter(formatter)
+    stream_handler.setFormatter(formatter)
+
+    # add handlers to logger
+    git_logger_under_construction.addHandler(file_handler)
+    git_logger_under_construction.addHandler(stream_handler)
+
+    # set logging level
+    git_logger_under_construction.setLevel(logging.DEBUG)
+
+    return git_logger_under_construction
 
 
 def init_config_parser(git_config_filename):
@@ -95,9 +127,8 @@ def generate_config_file():
     # end prepare configuration object
 
     # write to configuration file
-    config_file = open(git_configuration['config_filename'], 'w')
-    config_parser.write(config_file)
-    config_file.close()
+    with open(git_configuration['config_filename'], 'w') as config_file:
+        config_parser.write(config_file)
 
 
 def recursively_find_git_path():
@@ -134,10 +165,10 @@ def recursively_find_sh_path():
     return sh_path
 
 
-git_path_string, sh_path_string, log_this_global, log_cumulative_global = initialize()
+git_path_string, sh_path_string, log_this_global, log_cumulative_global, git_logger = initialize()
 
 if not os.path.exists(git_path_string.strip('"')):
-    print("git not found @ %s. Please update %s" % (git_path_string, __file__))
+    git_logger.info("git not found @ %s. Please update %s" % (git_path_string, __file__))
     sys.exit(-1)
 
 
@@ -161,13 +192,11 @@ def git(cmd, b_verbose=True):
     """
 
     local_log_filename = log_this_global
-    long_log_filename = log_cumulative_global
 
     git_cmd = 'git %s' % cmd
-    sh_cmd = build_sh_string(git_cmd)
 
     if b_verbose:
-        print(sh_cmd)
+        git_logger.info(git_cmd)
 
     # ref : https://docs.python.org/2/library/subprocess.html#replacing-os-popen-os-popen2-os-popen3
     # ref : https://docs.python.org/2/library/subprocess.html#subprocess.PIPE
@@ -178,20 +207,35 @@ def git(cmd, b_verbose=True):
 
         # https://docs.python.org/3/library/subprocess.html#subprocess.run
         completed_process = subprocess.run([sh_path_string, '-c', git_cmd, ], stdout=f_log, stderr=f_log)
-    # os.system(sh_cmd)
 
     txt = ''
     if os.path.exists(local_log_filename):
         with open(local_log_filename, 'r', encoding='utf8') as f:
             txt = f.read()
 
-    with open(long_log_filename, 'a') as f:
-        f.write('%s\n%s\n' % (sh_cmd, txt))
-
     if b_verbose:
-        print(txt)
+        # http://stackoverflow.com/questions/9348326/regex-find-word-in-the-string
+        b_error = is_git_error(txt)
+        if b_error:
+            git_logger.error(txt)
+        else:
+            git_logger.info(txt)
 
     return txt
+
+
+def is_git_error(txt):
+    """
+    Whether response from the git command includes error
+
+    :param str txt:
+    :return:
+    :rtype: bool
+    """
+    b_error = re.findall(r'^(.*?(\bfatal\b)[^$]*)$', txt, re.I) \
+              or re.findall(r'^(.*?(\bCONFLICT\b)[^$]*)$', txt, re.I | re.MULTILINE) \
+              or re.findall(r'^(.*?(\berror\b)[^$]*)$', txt, re.I)
+    return b_error
 
 
 def current_branch():
@@ -298,6 +342,9 @@ def git_update_mine(path, branch='master', upstream_name='upstream'):
     # if submodule detected, recursively update
     result.append(update_submodule(path))
 
+    result.append(git('status'))
+
+
     # https://felipec.wordpress.com/2013/09/01/advanced-git-concepts-the-upstream-tracking-branch/
     result.append(git('rebase @{u}'))
 
@@ -377,11 +424,11 @@ def recursively_process_path(path):
             if '$RECYCLE.BIN' not in root:
                 if os.path.exists(os.path.join(os.path.abspath(root), ".git", "index")):
                     git_path = os.path.abspath(root)
-                    print(time.asctime(), git_path)
+                    git_logger.info(time.asctime(), git_path)
                     if "tensorflow" == os.path.split(git_path)[-1] and 'DeepLearningStudyKr' not in git_path:
-                        print('tensorflow '.ljust(80, '='))
+                        git_logger.info('tensorflow '.ljust(80, '='))
                     if "llvm" == os.path.split(git_path)[-1]:
-                        print('llvm '.ljust(80, '+'))
+                        git_logger.info('llvm '.ljust(80, '+'))
                     # todo : if any submodule exist, fetch may be more effective than update?
                     update_submodule(git_path)
 
@@ -552,7 +599,7 @@ def is_host(host_url, repo_path):
 
 
 def select_path(arg, directory_name, file_name):
-    print("please do not use %" % (__file__ + '.' + 'select_path()'))
+    git_logger.info("please do not use %" % (__file__ + '.' + 'select_path()'))
     raise DeprecationWarning
 
 
@@ -581,7 +628,7 @@ def update_submodule(path):
     result = ''
 
     if detect_submodule():
-        # print('update_submodule()')
+        # git_logger.info('update_submodule()')
         result = git('submodule update --recursive', True)
 
     # change to stored
