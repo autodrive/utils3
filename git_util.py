@@ -210,8 +210,12 @@ def git(cmd, b_verbose=True):
 
     txt = ''
     if os.path.exists(local_log_filename):
-        with open(local_log_filename, 'r', encoding='utf8') as f:
-            txt = f.read()
+        try:
+            with open(local_log_filename, 'r', encoding='utf8') as f:
+                txt = f.read()
+        except UnicodeDecodeError:
+            with open(local_log_filename, 'r', encoding='cp949') as f:
+                txt = f.read()
 
     if b_verbose:
         # http://stackoverflow.com/questions/9348326/regex-find-word-in-the-string
