@@ -259,6 +259,19 @@ def get_git_status(b_verbose=False):
     return status
 
 
+def get_behind_from_status(b_verbose=False):
+    status_lines = get_git_status_lines(b_verbose)
+    # typical response:
+    # [0]: On branch master
+    # [1]: Your branch is behind 'origin/master' by 9832 commits, and can be fast-forwarded.
+    # [2]:   (use "git pull" to update your local branch)
+    # [3]: nothing to commit, working tree clean
+    second_line = status_lines[1].strip()
+    b_start = second_line.startswith('Your branch is behind')
+    b_end = second_line.endswith('can be fast-forwarded.')
+    return b_start and b_end
+
+
 def checkout_branch(branch_name):
     git('checkout %s' % branch_name)
 
@@ -372,11 +385,8 @@ def git_update_mine(path, branch='master', upstream_name='upstream'):
     # if submodule detected, recursively update
     result.append(update_submodule(path))
 
-    diff_origin_branch = git_diff(branch, '@{u}')
-    result.append(diff_origin_branch)
-
     # if diff with origin/branch seems to have some content, rebase
-    if diff_origin_branch:
+    if get_behind_from_status(True):
         # https://felipec.wordpress.com/2013/09/01/advanced-git-concepts-the-upstream-tracking-branch/
         result.append(git('rebase @{u}'))
 
