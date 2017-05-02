@@ -3,7 +3,7 @@ import os
 import tempfile
 import unittest
 
-current_path = os.path.abspath(os.curdir)
+current_path = os.getcwd()
 os.chdir(os.pardir)
 import git_util
 
@@ -79,12 +79,12 @@ class TestGitUtil(MyTestGitUtilBase):
         self.assertFalse(result)
 
     def test_get_remote_list(self):
-        result = git_util.get_remote_list(os.path.abspath(os.curdir), b_verbose=False)
+        result = git_util.get_remote_list(os.getcwd(), b_verbose=False)
         expected = ('origin', 'py2_upstream')
         self.assertSequenceEqual(expected, result)
 
     def test_is_upstream_in_remote_list(self):
-        result = git_util.is_upstream_in_remote_list(os.path.abspath(os.curdir), b_verbose=False)
+        result = git_util.is_upstream_in_remote_list(os.getcwd(), b_verbose=False)
         # currently there is no remote exactly named 'upstream'
         self.assertFalse(result)
 

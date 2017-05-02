@@ -91,8 +91,8 @@ def generate_config_file():
     # prepare configuration file contents
     git_path = recursively_find_git_path()
     sh_path = recursively_find_sh_path()
-    log_this = os.path.abspath(os.path.join(os.curdir, git_configuration['log_this_filename']))
-    log_cumulative = os.path.abspath(os.path.join(os.curdir, git_configuration['log_cumulative_filename']))
+    log_this = os.path.join(os.getcwd(), git_configuration['log_this_filename'])
+    log_cumulative = os.path.join(os.getcwd(), git_configuration['log_cumulative_filename'])
 
     # prepare configuration object
     config_parser = cp.ConfigParser()

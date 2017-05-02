@@ -1,7 +1,7 @@
 import os
 import unittest
 
-test_run_path = os.path.abspath(os.curdir)
+test_run_path = os.getcwd()
 os.chdir(os.pardir)
 import git_update_all
 os.chdir(test_run_path)
