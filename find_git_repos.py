@@ -43,10 +43,11 @@ class RecursiveGitRepositoryFinderBase(find_in.RecursiveFinderBase):
         self.found_set.add(dir_path)
 
     def process_git_folder(self, dir_path):
+        # indicate git repository location & remote info tuple
         self.add_to_found(dir_path)
         if self.b_verbose:
             remote_url_tuple = git_util.get_remote_url_tuple(dir_path)
-            git_util.git_logger.debug('%s %s' % (dir_path, remote_url_tuple))
+            git_util.git_logger.info('%s %s' % (dir_path, remote_url_tuple))
 
 
 class RecursiveGitRepositoryFinder(RecursiveGitRepositoryFinderBase):
