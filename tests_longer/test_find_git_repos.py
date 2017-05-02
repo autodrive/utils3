@@ -11,12 +11,13 @@ os.chdir(test_run_path)
 class TestFindGitRepositories(unittest.TestCase):
     def test_find_git_repos(self):
         # try to find repositories on the same level as this one
-        git_repositories_found = find_git_repos.find_git_repos(os.path.abspath(os.pardir), b_verbose=False)
+        git_repositories_found = find_git_repos.find_git_repos(os.path.abspath(os.path.join(os.pardir, os.pardir)),
+                                                               b_verbose=False)
 
         expected_set = set()
         sample_file_name = 'test_find_git_repos.txt'
         if not os.path.exists(sample_file_name):
-            sample_file_name = os.path.join('test', sample_file_name)
+            sample_file_name = os.path.join('tests_longer', sample_file_name)
 
         with open(sample_file_name, 'rt') as sample_file:
             for item in sample_file:
