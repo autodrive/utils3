@@ -124,6 +124,38 @@ Fetching upstream
                          }
         self.assertDictEqual(expected_dict, result_dict)
 
+    def test_is_git_error(self):
+        txt00_false = ''
+        self.assertFalse(git_util.is_git_error(txt00_false))
+
+        txt01_true = 'error: something went wrong'
+        self.assertTrue(git_util.is_git_error(txt01_true))
+
+        txt02_true = '''fatal: ambiguous argument 'master': unknown revision or path not in the working tree.
+Use '--' to separate paths from revisions, like this:
+'git <command> [<revision>...] -- [<file>...]'
+'''
+        self.assertTrue(git_util.is_git_error(txt02_true))
+
+        txt03_true = '''fatal: no such branch: 'master'
+invalid upstream @{u}
+'''
+        self.assertTrue(git_util.is_git_error(txt03_true))
+
+        txt04_true = '''First, rewinding head to replay your work on top of it...
+Applying: such and such modifications are made in this commit
+Using index info to reconstruct a base tree...
+Falling back to patching base and 3-way merge...
+Using index info to reconstruct a bast tree...
+M              some/path/some/file.txt
+error: Failed to merge in the changes.
+Falling back to patching base and 3-way merge...
+Auto-merging some/path/some/file.txt
+CONFLICT (content): Merge conflict in some/path/some/file.txt
+Patch failed at 0000 Go back to constructing dashboards via the DOM.
+'''
+        self.assertTrue(git_util.is_git_error(txt04_true))
+
 
 class TestGitUtilRemoteInfo(MyTestGitUtilBase):
     def setUp(self):
