@@ -7,14 +7,14 @@ Will create a git_util.ini during import if missing (may take some time)
 includes other utility functions
 """
 import configparser as cp
-import logging
-import logging.handlers
 import os
 import re
 import subprocess
 import sys
 import time
 import urllib.parse
+
+import wapj_logger
 
 # TODO : remote info of git-svn
 
@@ -69,28 +69,7 @@ def initialize_logger(log_file_name):
     # http://gyus.me/?p=418
     # https://docs.python.org/3/library/logging.html
 
-    # make logger instance
-    git_logger_under_construction = logging.getLogger('git_logger')
-
-    # make log formatter
-    formatter = logging.Formatter('[%(levelname)s|%(filename)s:%(lineno)s] %(asctime)s > %(message)s')
-
-    # make handlers for stream and file
-    file_handler = logging.FileHandler(log_file_name)
-    stream_handler = logging.StreamHandler()
-
-    # apply formatter to handlers
-    file_handler.setFormatter(formatter)
-    stream_handler.setFormatter(formatter)
-
-    # add handlers to logger
-    git_logger_under_construction.addHandler(file_handler)
-    git_logger_under_construction.addHandler(stream_handler)
-
-    # set logging level
-    git_logger_under_construction.setLevel(logging.DEBUG)
-
-    return git_logger_under_construction
+    return wapj_logger.initialize_logger(log_file_name)
 
 
 def init_config_parser(git_config_filename):
