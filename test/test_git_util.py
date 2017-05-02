@@ -64,7 +64,7 @@ class TestGitUtil(MyTestGitUtilBase):
         input_file_name = 'test_case_is_host.txt'
         repo_dir = os.path.abspath(os.pardir)
 
-        git_util.git_logger.debug('%s %s' % ('test_is_host2()', os.getcwd()))
+        # git_util.git_logger.debug('%s %s' % ('test_is_host2()', os.getcwd()))
         if not os.path.exists(input_file_name):
             input_file_name = os.path.join('test', input_file_name)
             repo_dir = os.getcwd()
