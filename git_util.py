@@ -69,7 +69,7 @@ def initialize_logger(log_file_name):
     # http://gyus.me/?p=418
     # https://docs.python.org/3/library/logging.html
 
-    return wapj_logger.initialize_logger(log_file_name)
+    return wapj_logger.initialize_logger(log_file_name, logger_name='git_logger')
 
 
 def init_config_parser(git_config_filename):
