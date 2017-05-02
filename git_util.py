@@ -7,14 +7,14 @@ Will create a git_util.ini during import if missing (may take some time)
 includes other utility functions
 """
 import configparser as cp
-import logging
-import logging.handlers
 import os
 import re
 import subprocess
 import sys
 import time
 import urllib.parse
+
+import wapj_logger
 
 # TODO : remote info of git-svn
 
@@ -69,28 +69,7 @@ def initialize_logger(log_file_name):
     # http://gyus.me/?p=418
     # https://docs.python.org/3/library/logging.html
 
-    # make logger instance
-    git_logger_under_construction = logging.getLogger('git_logger')
-
-    # make log formatter
-    formatter = logging.Formatter('[%(levelname)s|%(filename)s:%(lineno)s] %(asctime)s > %(message)s')
-
-    # make handlers for stream and file
-    file_handler = logging.FileHandler(log_file_name)
-    stream_handler = logging.StreamHandler()
-
-    # apply formatter to handlers
-    file_handler.setFormatter(formatter)
-    stream_handler.setFormatter(formatter)
-
-    # add handlers to logger
-    git_logger_under_construction.addHandler(file_handler)
-    git_logger_under_construction.addHandler(stream_handler)
-
-    # set logging level
-    git_logger_under_construction.setLevel(logging.DEBUG)
-
-    return git_logger_under_construction
+    return wapj_logger.initialize_logger(log_file_name, logger_name='git_logger')
 
 
 def init_config_parser(git_config_filename):
@@ -220,9 +199,10 @@ def git(cmd, b_verbose=True):
 
     if b_verbose:
         # http://stackoverflow.com/questions/9348326/regex-find-word-in-the-string
-        b_error = is_git_error(txt)
-        if b_error:
+        if is_git_error(txt):
             git_logger.error(txt)
+        elif is_git_warning(txt):
+            git_logger.warning(txt)
         else:
             git_logger.info(txt)
 
@@ -240,6 +220,20 @@ def is_git_error(txt):
     b_error = re.findall(r'^(.*?(\bfatal\b)[^$]*)$', txt, re.I) \
               or re.findall(r'^(.*?(\bCONFLICT\b)[^$]*)$', txt, re.I | re.MULTILINE) \
               or re.findall(r'^(.*?(\berror\b)[^$]*)$', txt, re.I)
+    return b_error
+
+
+def is_git_warning(txt):
+    """
+    Whether response from the git command includes warning
+
+    :param str txt:
+    :return:
+    :rtype: bool
+    """
+    b_error = re.findall(r'^(.*?(\bwarning\b)[^$]*)$', txt, re.I | re.MULTILINE)  \
+              or re.findall(r'^(.*?(\bUntracked\b)[^$]*)$', txt, re.I | re.MULTILINE)  # \
+              # or re.findall(r'^(.*?(\bkeyword02\b)[^$]*)$', txt, re.I)
     return b_error
 
 

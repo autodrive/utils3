@@ -37,7 +37,7 @@ class TestGitUtil(MyTestGitUtilBase):
         git_path, sh_path, log_this, log_cumulative, git_logger = git_util.initialize(input_file_name)
         self.assertEqual('a', git_path)
         self.assertEqual('b', log_this)
-        self.assertEqual('c', log_cumulative)
+        self.assertEqual('test\\git.log', log_cumulative)
         self.assertEqual('d', sh_path)
         self.assertIsInstance(git_logger, logging.Logger)
 
@@ -64,7 +64,7 @@ class TestGitUtil(MyTestGitUtilBase):
         input_file_name = 'test_case_is_host.txt'
         repo_dir = os.path.abspath(os.pardir)
 
-        git_util.git_logger.info('%s %s' % ('test_is_host2()', os.getcwd()))
+        # git_util.git_logger.debug('%s %s' % ('test_is_host2()', os.getcwd()))
         if not os.path.exists(input_file_name):
             input_file_name = os.path.join('test', input_file_name)
             repo_dir = os.getcwd()
@@ -93,6 +93,85 @@ class TestGitUtil(MyTestGitUtilBase):
         self.assertTrue(git_util.url_is_remote('git://github.com/schacon/ticgit.git'))
         self.assertFalse(git_util.url_is_remote(r'file:///srv/git/project.git'))
         self.assertFalse(git_util.url_is_remote(r'/srv/git/project/'))
+
+    def test_parse_fetch_all_result_00(self):
+            input_txt = '''Fetching origin
+From https:/github.com/abc/def
+   aaaaaaaaa..bbbbbbbbb  master     -> origin/master
+Fetching upstream
+From https:/github.com/def/abc
+   ccccccccc..ddddddddd  master     -> upstream/master
+    '''
+            result_dict = git_util.parse_fetch_all_result(input_txt)
+
+            expected_dict = {'origin': {'update': True,
+                                        'url': 'https:/github.com/abc/def',
+                                        'upstream branch': 'origin/master'},
+                             'upstream': {'update': True,
+                                          'url': 'https:/github.com/def/abc',
+                                          'upstream branch': 'upstream/master'}
+                             }
+            self.assertDictEqual(expected_dict, result_dict)
+
+    def test_parse_fetch_all_result_01(self):
+        input_txt = '''Fetching origin
+Fetching upstream
+'''
+        result_dict = git_util.parse_fetch_all_result(input_txt)
+
+        expected_dict = {'origin': {'update': False},
+                         'upstream': {'update': False}
+                         }
+        self.assertDictEqual(expected_dict, result_dict)
+
+    def test_is_git_error(self):
+        txt00_false = ''
+        self.assertFalse(git_util.is_git_error(txt00_false))
+
+        txt01_true = 'error: something went wrong'
+        self.assertTrue(git_util.is_git_error(txt01_true))
+
+        txt02_true = '''fatal: ambiguous argument 'master': unknown revision or path not in the working tree.
+Use '--' to separate paths from revisions, like this:
+'git <command> [<revision>...] -- [<file>...]'
+'''
+        self.assertTrue(git_util.is_git_error(txt02_true))
+
+        txt03_true = '''fatal: no such branch: 'master'
+invalid upstream @{u}
+'''
+        self.assertTrue(git_util.is_git_error(txt03_true))
+
+        txt04_true = '''First, rewinding head to replay your work on top of it...
+Applying: such and such modifications are made in this commit
+Using index info to reconstruct a base tree...
+Falling back to patching base and 3-way merge...
+Using index info to reconstruct a bast tree...
+M              some/path/some/file.txt
+error: Failed to merge in the changes.
+Falling back to patching base and 3-way merge...
+Auto-merging some/path/some/file.txt
+CONFLICT (content): Merge conflict in some/path/some/file.txt
+Patch failed at 0000 Go back to constructing dashboards via the DOM.
+'''
+        self.assertTrue(git_util.is_git_error(txt04_true))
+
+    def test_is_git_warning(self):
+        text00_true = '''warning: unable to rmdir utils: Directory not empty
+Switched to branch 'master'
+'''
+        self.assertTrue(git_util.is_git_warning(text00_true))
+
+        text01_true = '''Fetching origin
+warning: redirecting to https://cmake.org/cmake.git/
+'''
+        self.assertTrue(git_util.is_git_warning(text01_true))
+
+        text02_true = 'warning: inexact rename detection was skipped due to too many files.'
+        self.assertTrue(git_util.is_git_warning(text02_true))
+
+        text03_true = 'warning: you may want to set your diff.renameLimit variable to at least 3173 and retry the command.'
+        self.assertTrue(git_util.is_git_warning(text03_true))
 
 
 class TestGitUtilRemoteInfo(MyTestGitUtilBase):
@@ -247,36 +326,6 @@ class TestGitUtilRemoteInfo(MyTestGitUtilBase):
         result_set = set(result_list)
 
         self.assertSetEqual(expected_set, result_set.intersection(expected_set))
-
-    def test_parse_fetch_all_result_00(self):
-            input_txt = '''Fetching origin
-From https:/github.com/abc/def
-   aaaaaaaaa..bbbbbbbbb  master     -> origin/master
-Fetching upstream
-From https:/github.com/def/abc
-   ccccccccc..ddddddddd  master     -> upstream/master
-    '''
-            result_dict = git_util.parse_fetch_all_result(input_txt)
-
-            expected_dict = {'origin': {'update': True,
-                                        'url': 'https:/github.com/abc/def',
-                                        'upstream branch': 'origin/master'},
-                             'upstream': {'update': True,
-                                          'url': 'https:/github.com/def/abc',
-                                          'upstream branch': 'upstream/master'}
-                             }
-            self.assertDictEqual(expected_dict, result_dict)
-
-    def test_parse_fetch_all_result_01(self):
-        input_txt = '''Fetching origin
-Fetching upstream
-'''
-        result_dict = git_util.parse_fetch_all_result(input_txt)
-
-        expected_dict = {'origin': {'update': False},
-                         'upstream': {'update': False}
-                         }
-        self.assertDictEqual(expected_dict, result_dict)
 
 
 if __name__ == '__main__':
