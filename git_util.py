@@ -199,9 +199,10 @@ def git(cmd, b_verbose=True):
 
     if b_verbose:
         # http://stackoverflow.com/questions/9348326/regex-find-word-in-the-string
-        b_error = is_git_error(txt)
-        if b_error:
+        if is_git_error(txt):
             git_logger.error(txt)
+        elif is_git_warning(txt):
+            git_logger.warning(txt)
         else:
             git_logger.info(txt)
 
