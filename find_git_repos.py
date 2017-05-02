@@ -56,14 +56,14 @@ class RecursiveGitRepositoryFinder(RecursiveGitRepositoryFinderBase):
         self.recursively_find_in()
 
 
-def find_git_repos(root_path=os.path.expanduser('~')):
+def find_git_repos(root_path=os.path.expanduser('~'), b_verbose=True):
     """
     Recursively find git repositories
     :param root_path: Where to start search
     :return:
     """
 
-    RecursiveGitRepositoryFinder(root_path, 'config', b_verbose=True)
+    return RecursiveGitRepositoryFinder(root_path, 'config', b_verbose=b_verbose)
 
 
 if __name__ == '__main__':
