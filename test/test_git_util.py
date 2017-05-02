@@ -156,6 +156,23 @@ Patch failed at 0000 Go back to constructing dashboards via the DOM.
 '''
         self.assertTrue(git_util.is_git_error(txt04_true))
 
+    def test_is_git_warning(self):
+        text00_true = '''warning: unable to rmdir utils: Directory not empty
+Switched to branch 'master'
+'''
+        self.assertTrue(git_util.is_git_warning(text00_true))
+
+        text01_true = '''Fetching origin
+warning: redirecting to https://cmake.org/cmake.git/
+'''
+        self.assertTrue(git_util.is_git_warning(text01_true))
+
+        text02_true = 'warning: inexact rename detection was skipped due to too many files.'
+        self.assertTrue(git_util.is_git_warning(text02_true))
+
+        text03_true = 'warning: you may want to set your diff.renameLimit variable to at least 3173 and retry the command.'
+        self.assertTrue(git_util.is_git_warning(text03_true))
+
 
 class TestGitUtilRemoteInfo(MyTestGitUtilBase):
     def setUp(self):

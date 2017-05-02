@@ -222,6 +222,20 @@ def is_git_error(txt):
     return b_error
 
 
+def is_git_warning(txt):
+    """
+    Whether response from the git command includes warning
+
+    :param str txt:
+    :return:
+    :rtype: bool
+    """
+    b_error = re.findall(r'^(.*?(\bwarning\b)[^$]*)$', txt, re.I | re.MULTILINE)  \
+              or re.findall(r'^(.*?(\bUntracked\b)[^$]*)$', txt, re.I | re.MULTILINE)  # \
+              # or re.findall(r'^(.*?(\bkeyword02\b)[^$]*)$', txt, re.I)
+    return b_error
+
+
 def get_current_branch_from_status():
     status_lines = get_git_status_lines()
     return status_lines[0].split()[-1]
