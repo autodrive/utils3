@@ -612,6 +612,17 @@ def is_upstream_in_remote_list(repo_path, b_verbose=False):
     return 'upstream' in get_remote_list(repo_path, b_verbose=b_verbose)
 
 
+def is_upstream_in_remote_list_here(upstream_name='upstream', b_verbose=False):
+    """
+
+    :param str upstream_name:
+    :param bool b_verbose:
+    :return:
+    :rtype: bool
+    """
+    return upstream_name in get_remote_list_here(upstream_name, b_verbose=b_verbose)
+
+
 def get_remote_info_from_git_config(repo_path):
     """
     Return dictionary of remotes of a repository
