@@ -464,7 +464,7 @@ def is_rebase_upstream_needed(branch, upstream_name):
     b_upstream_in_remote_list = is_upstream_in_remote_list_here(upstream_name)
     b_branch_in_remote_branch_list = is_branch_in_remote_branch_list(branch, upstream_name)
     if b_branch_in_remote_branch_list:
-        b_upstream_branch = git_diff_summary(branch, '%s/%s' % (upstream_name, branch))
+        b_upstream_branch = git_diff(branch, '%s/%s' % (upstream_name, branch), b_verbose=False)
     else:
         b_upstream_branch = False
 
