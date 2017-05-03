@@ -447,7 +447,7 @@ def git_update_mine(path, branch='master', upstream_name='upstream', submodule_i
         result.append(git('rebase @{u}'))
 
     if is_rebase_upstream_needed(branch, upstream_name):
-        result.append(git('rebase %s' % parsed_fetch_result_dict['upstream']['upstream branch']))
+        result.append(git('rebase %s' % get_upstream_name_branch(branch, upstream_name)))
         if 'upstream' not in parsed_fetch_result_dict:
             git_logger.debug("'upstream' not in parsed_fetch_result_dict")
             git_logger.debug("git_fetch_result_str = %s" % git_fetch_result_str)
