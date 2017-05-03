@@ -475,8 +475,8 @@ def git_diff_summary(obj1, obj2):
     return git('diff --summary %s %s' % (obj1, obj2)).strip()
 
 
-def git_diff(obj1, obj2):
-    return git('diff %s %s' % (obj1, obj2)).strip()
+def git_diff(obj1, obj2, b_verbose=True):
+    return git('diff %s %s' % (obj1, obj2), b_verbose=b_verbose).strip()
 
 
 def fetch_all_and_rebase(path, branch='master'):
