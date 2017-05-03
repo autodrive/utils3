@@ -462,6 +462,18 @@ def git_update_mine(path, branch='master', upstream_name='upstream', submodule_i
     return result
 
 
+def is_rebase_upstream_needed(branch, upstream_name):
+    # if diff with upstream/branch seems to have some content, try to rebase
+    b_upstream_in_remote_list = is_upstream_in_remote_list_here(upstream_name)
+    b_branch_in_remote_branch_list = is_branch_in_remote_branch_list(branch, upstream_name)
+    if b_branch_in_remote_branch_list:
+        b_upstream_branch = git_diff_summary(branch, '%s/%s' % (upstream_name, branch))
+    else:
+        b_upstream_branch = False
+
+    return b_upstream_in_remote_list and b_branch_in_remote_branch_list and b_upstream_branch
+
+
 def git_diff_summary(obj1, obj2):
     return git('diff --summary %s %s' % (obj1, obj2)).strip()
 
@@ -620,7 +632,7 @@ def is_upstream_in_remote_list_here(upstream_name='upstream', b_verbose=False):
     :return:
     :rtype: bool
     """
-    return upstream_name in get_remote_list_here(upstream_name, b_verbose=b_verbose)
+    return upstream_name in get_remote_list_here(b_verbose=b_verbose)
 
 
 def get_remote_info_from_git_config(repo_path):
