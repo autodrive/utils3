@@ -446,15 +446,12 @@ def git_update_mine(path, branch='master', upstream_name='upstream', submodule_i
         # https://felipec.wordpress.com/2013/09/01/advanced-git-concepts-the-upstream-tracking-branch/
         result.append(git('rebase @{u}'))
 
-    if is_upstream_in_remote_list(path):
-        if is_branch_in_remote_branch_list(branch, upstream_name):
-            # if diff with upstream/branch seems to have some content, try to rebase
-            if parsed_fetch_result_dict.get('upstream', {'update':False})['update']:
-                result.append(git('rebase %s' % parsed_fetch_result_dict['upstream']['upstream branch']))
-                if 'upstream' not in parsed_fetch_result_dict:
-                    git_logger.debug("'upstream' not in parsed_fetch_result_dict")
-                    git_logger.debug("git_fetch_result_str = %s" % git_fetch_result_str)
-                    git_logger.debug("parsed_fetch_result_dict = %r" % parsed_fetch_result_dict)
+    if is_rebase_upstream_needed(branch, upstream_name):
+        result.append(git('rebase %s' % parsed_fetch_result_dict['upstream']['upstream branch']))
+        if 'upstream' not in parsed_fetch_result_dict:
+            git_logger.debug("'upstream' not in parsed_fetch_result_dict")
+            git_logger.debug("git_fetch_result_str = %s" % git_fetch_result_str)
+            git_logger.debug("parsed_fetch_result_dict = %r" % parsed_fetch_result_dict)
 
     branch_master, git_path_full, result_restore = checkout_chdir(original_full_path, branch_backup)
     result += result_restore
