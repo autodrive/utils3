@@ -206,9 +206,13 @@ def process_repo_info(repo_info):
                                submodule_info=repo_info['submodule_info'])
 
 
-def process_repo_list(repo_list):
+def process_repo_list(repo_list_dict):
+    repo_list = [{'path': key, 'branch': repo_list_dict[key]['branch'],
+                  'submodule_info': repo_list_dict[key]['submodule_info']}
+                 for key in repo_list_dict]
     random.shuffle(repo_list)
-    return map(process_repo_info, repo_list)
+
+    return [process_repo_info(repo_info) for repo_info in repo_list]
 
 
 def updater_processor(argv):
