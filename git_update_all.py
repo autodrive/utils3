@@ -202,6 +202,8 @@ def build_or_update_repo_list(repo_list_path, root):
 
 
 def process_repo_info(repo_info):
+    git_util.git_logger.info('### process_repo_info(%r) ###' % repo_info['path'])
+
     git_util.update_repository(repo_info['path'], branch=repo_info['branch'],
                                submodule_info=repo_info['submodule_info'])
 
