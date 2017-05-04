@@ -216,6 +216,8 @@ def process_repo_list(repo_list_dict):
 
 
 def updater_processor(argv):
+    git_util.git_logger.debug('updater_processor() start')
+    start_time_sec = time.time()
     repo_list_path = 'repo_list.pickle'
 
     if 3 <= len(argv):
@@ -230,6 +232,9 @@ def updater_processor(argv):
             repo_list_dict = pickle.load(repo_list_read)
 
     process_repo_list(repo_list_dict)
+    end_time_sec = time.time()
+    git_util.git_logger.debug('updater_processor() end')
+    git_util.git_logger.debug('elapsed time = %g(sec)' % (end_time_sec - start_time_sec))
 
 
 if __name__ == '__main__':
