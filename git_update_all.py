@@ -10,12 +10,12 @@ import find_git_repos
 import git_util
 
 
-def init_ignore(fname='.git_update_all_ignore'):
+def init_ignore(ignore_filename='.git_update_all_ignore'):
 
-    ignore_set = set(['.cache', '.git', '$RECYCLE.BIN',])
+    ignore_set = {'.cache', '.git', '$RECYCLE.BIN',}
 
-    if os.path.exists(fname):
-        f = codecs.open(fname, 'r', encoding='utf8')
+    if os.path.exists(ignore_filename):
+        f = codecs.open(ignore_filename, 'r', encoding='utf8')
 
         additional_list = list(filter(len, list(map(str.strip, f.readlines()))))
         f.close()
