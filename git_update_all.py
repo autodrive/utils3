@@ -2,18 +2,20 @@
 # -*- coding: utf8 -*-
 import codecs
 import os
+import pickle
+import random
 import time
 
 import find_git_repos
 import git_util
 
 
-def init_ignore(fname='.git_update_all_ignore'):
+def init_ignore(ignore_filename='.git_update_all_ignore'):
 
-    ignore_set = set(['.cache', '.git', '$RECYCLE.BIN',])
+    ignore_set = {'.cache', '.git', '$RECYCLE.BIN',}
 
-    if os.path.exists(fname):
-        f = codecs.open(fname, 'r', encoding='utf8')
+    if os.path.exists(ignore_filename):
+        f = codecs.open(ignore_filename, 'r', encoding='utf8')
 
         additional_list = list(filter(len, list(map(str.strip, f.readlines()))))
         f.close()
@@ -57,7 +59,10 @@ class GitRepositoryUpdater(find_git_repos.RecursiveGitRepositoryFinderBase):
                 if (branch_info_dict) and ('master' not in branch_info_dict):
                     branch = list(branch_info_dict.keys())[0]
 
-                git_util.update_repository(repo_path, branch=branch, submodule_info=submodule_info)
+                self.act_on_repo(repo_path, branch, submodule_info)
+
+    def act_on_repo(self, repo_path, branch, submodule_info):
+        git_util.update_repository(repo_path, branch=branch, submodule_info=submodule_info)
 
     def add_remote_url_to_found(self, repo_path, remote_info):
         remote_info_items = []
@@ -130,8 +135,112 @@ def is_ignore(repo_path, ignore_list=ignore_list_global):
     return result
 
 
+class RepoListUpdater(GitRepositoryUpdater):
+    def __init__(self, root_path, file_name_spec='config', b_verbose=False, repo_list_dict=None):
+        super(RepoListUpdater, self).__init__(root_path, file_name_spec, b_verbose=b_verbose)
+        if repo_list_dict is None:
+            self.repo_list_dict = dict()
+        else:
+            self.repo_list_dict = dict(repo_list_dict)
+
+        # when a repo_path is visited, added to this set
+        self.visited_set = set()
+
+    def act_on_repo(self, repo_path, branch, submodule_info):
+        self.visited_set.add(repo_path)
+        if repo_path not in self.repo_list_dict:
+            self.repo_list_dict[repo_path] = {'branch': branch,
+                                              'submodule_info': submodule_info}
+
+    def run_this(self):
+        # recursively visit paths
+        # this call may take some time
+        self.recursively_find_in()
+
+        existing_set = set(self.repo_list_dict.keys())
+        unvisited_set = existing_set - self.visited_set
+
+        # remove unvisited repository info from the database
+        for unvisited_repo_path in unvisited_set:
+            del self.repo_list_dict[unvisited_repo_path]
+
+        return self.repo_list_dict
+
+
+def build_or_update_repo_list(repo_list_path, root):
+    """
+
+    :param str repo_list_path:
+    :param str root:
+    :return:
+    :rtype: list(dict)
+    """
+
+    ''' read existing repository list '''
+    if os.path.exists(repo_list_path):
+        with open(repo_list_path, 'rb') as repo_list_read:
+            repo_list_dict = pickle.load(repo_list_read)
+    else:
+        repo_list_dict = dict()
+
+    # architecture of repo_list_dict
+    # repo_list_dict = { <repo_path> : {
+    #                                    'branch' : default_branch_str,
+    #                                    'submodule_info' : submodule_info_dict,
+    #                                  }
+    #                  }
+
+    ''' update repository list '''
+    updater = RepoListUpdater(root, repo_list_dict)
+    updated_repo_list_dict = updater.run_this()
+
+    ''' write repository list '''
+    with open(repo_list_path, 'wb') as repo_list_write:
+        pickle.dump(updated_repo_list_dict, repo_list_write)
+
+    return updated_repo_list_dict
+
+
+def process_repo_info(repo_info):
+    git_util.git_logger.info('### process_repo_info(%r) ###' % repo_info['path'])
+
+    git_util.update_repository(repo_info['path'], branch=repo_info['branch'],
+                               submodule_info=repo_info['submodule_info'])
+
+
+def process_repo_list(repo_list_dict):
+    repo_list = [{'path': key, 'branch': repo_list_dict[key]['branch'],
+                  'submodule_info': repo_list_dict[key]['submodule_info']}
+                 for key in repo_list_dict]
+    random.shuffle(repo_list)
+
+    return list(map(process_repo_info, repo_list))
+
+
+def updater_processor(argv):
+    width = 40
+    git_util.git_logger.debug('=== updater_processor() start '.ljust(width, '='))
+    start_time_sec = time.time()
+    repo_list_path = 'repo_list.pickle'
+
+    if 3 <= len(argv):
+        script, repo_list_path, root = argv
+        with open(repo_list_path, 'rb') as repo_list_read:
+            repo_list_dict = pickle.load(repo_list_read)
+    elif 2 == len(argv):
+        script, root = argv
+        repo_list_dict = build_or_update_repo_list(repo_list_path, root)
+    else:
+        with open(repo_list_path, 'rb') as repo_list_read:
+            repo_list_dict = pickle.load(repo_list_read)
+
+    process_repo_list(repo_list_dict)
+    end_time_sec = time.time()
+    git_util.git_logger.debug('elapsed time = %g(sec)' % (end_time_sec - start_time_sec))
+    git_util.git_logger.debug('=== updater_processor() end '.ljust(width, '='))
+
+
 if __name__ == '__main__':
     import sys
 
-    if len(sys.argv) == 2:
-        git_update_all(sys.argv[1])
+    updater_processor(sys.argv)

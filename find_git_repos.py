@@ -43,6 +43,7 @@ class RecursiveGitRepositoryFinderBase(find_in.RecursiveFinderBase):
         self.found_set.add(dir_path)
 
     def process_git_folder(self, dir_path):
+        # indicate git repository location & remote info tuple
         self.add_to_found(dir_path)
         if self.b_verbose:
             remote_url_tuple = git_util.get_remote_url_tuple(dir_path)
@@ -55,14 +56,14 @@ class RecursiveGitRepositoryFinder(RecursiveGitRepositoryFinderBase):
         self.recursively_find_in()
 
 
-def find_git_repos(root_path=os.path.expanduser('~')):
+def find_git_repos(root_path=os.path.expanduser('~'), b_verbose=True):
     """
     Recursively find git repositories
     :param root_path: Where to start search
     :return:
     """
 
-    RecursiveGitRepositoryFinder(root_path, 'config', b_verbose=True)
+    return RecursiveGitRepositoryFinder(root_path, 'config', b_verbose=b_verbose)
 
 
 if __name__ == '__main__':

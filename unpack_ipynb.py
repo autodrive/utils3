@@ -221,7 +221,7 @@ def process_one_cell(fw, cell):
     call_this(fw, cell)
 
 
-def convert_tree(full_path=os.path.abspath(os.curdir)):
+def convert_tree(full_path=os.getcwd()):
     for dir_path, dir_names, file_names in os.walk(full_path):
         for filename in file_names:
             if filename.endswith(".ipynb"):
@@ -234,4 +234,4 @@ if "__main__" == __name__:
     if 2 <= len(sys.argv):
         unpack(sys.argv[1])
     else:
-        convert_tree(os.path.abspath(os.curdir))
+        convert_tree(os.getcwd())

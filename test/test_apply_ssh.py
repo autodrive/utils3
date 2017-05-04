@@ -1,7 +1,7 @@
 import os
 import unittest
 
-current_path = os.path.abspath(os.curdir)
+current_path = os.getcwd()
 os.chdir(os.pardir)
 
 import apply_ssh
@@ -9,7 +9,7 @@ import apply_ssh
 
 class TestApplySSHbitbucket(unittest.TestCase):
     def setUp(self):
-        root_path = os.path.abspath(os.curdir)
+        root_path = os.getcwd()
         file_name_spec = ''
         self.applier = apply_ssh.ApplySSHbitbucket(root_path, file_name_spec)
 
@@ -29,7 +29,7 @@ class TestApplySSHbitbucket(unittest.TestCase):
 
 class TestApplySSHgithub(unittest.TestCase):
     def setUp(self):
-        root_path = os.path.abspath(os.curdir)
+        root_path = os.getcwd()
         file_name_spec = ''
         self.applier = apply_ssh.ApplySSHgithub(root_path, file_name_spec)
 

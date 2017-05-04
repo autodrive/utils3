@@ -7,7 +7,7 @@ import git_util as git
 
 def main(argv):
     if 2 <= len(argv):
-        original_path = os.path.abspath(os.curdir)
+        original_path = os.getcwd()
 
         path_name = argv[1]
         os.chdir(path_name)

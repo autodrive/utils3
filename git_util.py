@@ -7,14 +7,14 @@ Will create a git_util.ini during import if missing (may take some time)
 includes other utility functions
 """
 import configparser as cp
-import logging
-import logging.handlers
 import os
 import re
 import subprocess
 import sys
 import time
 import urllib.parse
+
+import wapj_logger
 
 # TODO : remote info of git-svn
 
@@ -69,28 +69,7 @@ def initialize_logger(log_file_name):
     # http://gyus.me/?p=418
     # https://docs.python.org/3/library/logging.html
 
-    # make logger instance
-    git_logger_under_construction = logging.getLogger('git_logger')
-
-    # make log formatter
-    formatter = logging.Formatter('[%(levelname)s|%(filename)s:%(lineno)s] %(asctime)s > %(message)s')
-
-    # make handlers for stream and file
-    file_handler = logging.FileHandler(log_file_name)
-    stream_handler = logging.StreamHandler()
-
-    # apply formatter to handlers
-    file_handler.setFormatter(formatter)
-    stream_handler.setFormatter(formatter)
-
-    # add handlers to logger
-    git_logger_under_construction.addHandler(file_handler)
-    git_logger_under_construction.addHandler(stream_handler)
-
-    # set logging level
-    git_logger_under_construction.setLevel(logging.DEBUG)
-
-    return git_logger_under_construction
+    return wapj_logger.initialize_logger(log_file_name, logger_name='git_logger')
 
 
 def init_config_parser(git_config_filename):
@@ -112,8 +91,8 @@ def generate_config_file():
     # prepare configuration file contents
     git_path = recursively_find_git_path()
     sh_path = recursively_find_sh_path()
-    log_this = os.path.abspath(os.path.join(os.curdir, git_configuration['log_this_filename']))
-    log_cumulative = os.path.abspath(os.path.join(os.curdir, git_configuration['log_cumulative_filename']))
+    log_this = os.path.join(os.getcwd(), git_configuration['log_this_filename'])
+    log_cumulative = os.path.join(os.getcwd(), git_configuration['log_cumulative_filename'])
 
     # prepare configuration object
     config_parser = cp.ConfigParser()
@@ -220,9 +199,10 @@ def git(cmd, b_verbose=True):
 
     if b_verbose:
         # http://stackoverflow.com/questions/9348326/regex-find-word-in-the-string
-        b_error = is_git_error(txt)
-        if b_error:
+        if is_git_error(txt):
             git_logger.error(txt)
+        elif is_git_warning(txt):
+            git_logger.warning(txt)
         else:
             git_logger.info(txt)
 
@@ -240,6 +220,20 @@ def is_git_error(txt):
     b_error = re.findall(r'^(.*?(\bfatal\b)[^$]*)$', txt, re.I) \
               or re.findall(r'^(.*?(\bCONFLICT\b)[^$]*)$', txt, re.I | re.MULTILINE) \
               or re.findall(r'^(.*?(\berror\b)[^$]*)$', txt, re.I)
+    return b_error
+
+
+def is_git_warning(txt):
+    """
+    Whether response from the git command includes warning
+
+    :param str txt:
+    :return:
+    :rtype: bool
+    """
+    b_error = re.findall(r'^(.*?(\bwarning\b)[^$]*)$', txt, re.I | re.MULTILINE)  \
+              or re.findall(r'^(.*?(\bUntracked\b)[^$]*)$', txt, re.I | re.MULTILINE)  # \
+              # or re.findall(r'^(.*?(\bkeyword02\b)[^$]*)$', txt, re.I)
     return b_error
 
 
@@ -452,15 +446,12 @@ def git_update_mine(path, branch='master', upstream_name='upstream', submodule_i
         # https://felipec.wordpress.com/2013/09/01/advanced-git-concepts-the-upstream-tracking-branch/
         result.append(git('rebase @{u}'))
 
-    if is_upstream_in_remote_list(path):
-        if is_branch_in_remote_branch_list(branch, upstream_name):
-            # if diff with upstream/branch seems to have some content, try to rebase
-            if parsed_fetch_result_dict.get('upstream', {'update':False})['update']:
-                result.append(git('rebase %s' % parsed_fetch_result_dict['upstream']['upstream branch']))
-                if 'upstream' not in parsed_fetch_result_dict:
-                    git_logger.debug("'upstream' not in parsed_fetch_result_dict")
-                    git_logger.debug("git_fetch_result_str = %s" % git_fetch_result_str)
-                    git_logger.debug("parsed_fetch_result_dict = %r" % parsed_fetch_result_dict)
+    if is_rebase_upstream_needed(branch, upstream_name):
+        result.append(git('rebase %s' % get_upstream_name_branch(branch, upstream_name)))
+        if 'upstream' not in parsed_fetch_result_dict:
+            git_logger.debug("'upstream' not in parsed_fetch_result_dict")
+            git_logger.debug("git_fetch_result_str = %s" % git_fetch_result_str)
+            git_logger.debug("parsed_fetch_result_dict = %r" % parsed_fetch_result_dict)
 
     branch_master, git_path_full, result_restore = checkout_chdir(original_full_path, branch_backup)
     result += result_restore
@@ -468,12 +459,30 @@ def git_update_mine(path, branch='master', upstream_name='upstream', submodule_i
     return result
 
 
+def is_rebase_upstream_needed(branch, upstream_name):
+    # if diff with upstream/branch seems to have some content, try to rebase
+    b_upstream_in_remote_list = is_upstream_in_remote_list_here(upstream_name)
+    b_branch_in_remote_branch_list = is_branch_in_remote_branch_list(branch, upstream_name)
+    if b_branch_in_remote_branch_list:
+        upstream_name_branch = get_upstream_name_branch(branch, upstream_name)
+        b_upstream_branch = git_diff(branch, '%s' % upstream_name_branch, b_verbose=False)
+    else:
+        b_upstream_branch = False
+
+    return b_upstream_in_remote_list and b_branch_in_remote_branch_list and b_upstream_branch
+
+
+def get_upstream_name_branch(branch, upstream_name):
+    upstream_name_branch = '%s/%s' % (upstream_name, branch)
+    return upstream_name_branch
+
+
 def git_diff_summary(obj1, obj2):
     return git('diff --summary %s %s' % (obj1, obj2)).strip()
 
 
-def git_diff(obj1, obj2):
-    return git('diff %s %s' % (obj1, obj2)).strip()
+def git_diff(obj1, obj2, b_verbose=True):
+    return git('diff %s %s' % (obj1, obj2), b_verbose=b_verbose).strip()
 
 
 def fetch_all_and_rebase(path, branch='master'):
@@ -588,10 +597,22 @@ def get_remote_list(repo_path, b_verbose=True):
     """
     backup_path = chdir(repo_path)
 
-    result_tuple = tuple(git('remote', b_verbose=b_verbose).splitlines())
+    result_tuple = get_remote_list_here(b_verbose)
 
     os.chdir(backup_path)
 
+    return result_tuple
+
+
+def get_remote_list_here(b_verbose=True):
+    """
+    Get the list of names of remote repositories from `git origin` command
+
+    :param bool b_verbose: True by default
+    :return: tuple containing remote repository names
+    :rtype: tuple(str)
+    """
+    result_tuple = tuple(git('remote', b_verbose=b_verbose).splitlines())
     return result_tuple
 
 
@@ -604,6 +625,17 @@ def is_upstream_in_remote_list(repo_path, b_verbose=False):
     :rtype: bool
     """
     return 'upstream' in get_remote_list(repo_path, b_verbose=b_verbose)
+
+
+def is_upstream_in_remote_list_here(upstream_name='upstream', b_verbose=False):
+    """
+
+    :param str upstream_name:
+    :param bool b_verbose:
+    :return:
+    :rtype: bool
+    """
+    return upstream_name in get_remote_list_here(b_verbose=b_verbose)
 
 
 def get_remote_info_from_git_config(repo_path):
