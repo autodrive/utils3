@@ -59,7 +59,11 @@ class GitRepositoryUpdater(find_git_repos.RecursiveGitRepositoryFinderBase):
                 if (branch_info_dict) and ('master' not in branch_info_dict):
                     branch = list(branch_info_dict.keys())[0]
 
-                git_util.update_repository(repo_path, branch=branch, submodule_info=submodule_info)
+                self.act_on_repo(repo_path, branch, submodule_info)
+
+    @staticmethod
+    def act_on_repo(repo_path, branch, submodule_info):
+        git_util.update_repository(repo_path, branch=branch, submodule_info=submodule_info)
 
     def add_remote_url_to_found(self, repo_path, remote_info):
         remote_info_items = []
