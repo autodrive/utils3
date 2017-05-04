@@ -216,15 +216,19 @@ def process_repo_list(repo_list_dict):
 
 
 def updater_processor(argv):
-    root = ''
     repo_list_path = 'repo_list.pickle'
 
     if 3 <= len(argv):
         script, repo_list_path, root = argv
+        with open(repo_list_path, 'rb') as repo_list_read:
+            repo_list_dict = pickle.load(repo_list_read)
     elif 2 == len(argv):
         script, root = argv
+        repo_list_dict = build_or_update_repo_list(repo_list_path, root)
+    else:
+        with open(repo_list_path, 'rb') as repo_list_read:
+            repo_list_dict = pickle.load(repo_list_read)
 
-    repo_list_dict = build_or_update_repo_list(repo_list_path, root)
     process_repo_list(repo_list_dict)
 
 
