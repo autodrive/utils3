@@ -2,6 +2,8 @@
 # -*- coding: utf8 -*-
 import codecs
 import os
+import pickle
+import random
 import time
 
 import find_git_repos
@@ -128,6 +130,27 @@ def is_ignore(repo_path, ignore_list=ignore_list_global):
     # git_util.git_logger.info("%r, %r" % (repo_path, result))
 
     return result
+
+
+def build_or_update_repo_list(repo_list_path):
+    if os.path.exists(repo_list_path):
+        with open(repo_list_path, 'rb') as repo_list_file:
+            repo_list = pickle.load(repo_list_file)
+    else:
+        repo_list = []
+    return repo_list
+
+
+def process_repos(repo_list):
+    random.shuffle(repo_list)
+    for repo_info in repo_list:
+        git_util.update_repository(repo_info['path'])
+
+
+def updater_processor(argv):
+    script, repo_list_path, root = argv
+    repo_list = build_or_update_repo_list(repo_list_path)
+    process_repos(repo_list)
 
 
 if __name__ == '__main__':
