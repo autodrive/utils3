@@ -61,8 +61,7 @@ class GitRepositoryUpdater(find_git_repos.RecursiveGitRepositoryFinderBase):
 
                 self.act_on_repo(repo_path, branch, submodule_info)
 
-    @staticmethod
-    def act_on_repo(repo_path, branch, submodule_info):
+    def act_on_repo(self, repo_path, branch, submodule_info):
         git_util.update_repository(repo_path, branch=branch, submodule_info=submodule_info)
 
     def add_remote_url_to_found(self, repo_path, remote_info):
@@ -136,25 +135,86 @@ def is_ignore(repo_path, ignore_list=ignore_list_global):
     return result
 
 
-def build_or_update_repo_list(repo_list_path):
+class RepoListUpdater(GitRepositoryUpdater):
+    def __init__(self, root_path, file_name_spec='config', b_verbose=False, repo_list_dict=None):
+        super(RepoListUpdater, self).__init__(root_path, file_name_spec, b_verbose=b_verbose)
+        if repo_list_dict is None:
+            self.repo_list_dict = dict()
+        else:
+            self.repo_list_dict = dict(repo_list_dict)
+
+        # when a repo_path is visited, added to this set
+        self.visited_set = set()
+
+    def act_on_repo(self, repo_path, branch, submodule_info):
+        self.visited_set.add(repo_path)
+        if repo_path not in self.repo_list_dict:
+            self.repo_list_dict[repo_path] = {'branch': branch,
+                                              'submodule_info': submodule_info}
+
+    def run_this(self):
+        # recursively visit paths
+        # this call may take some time
+        self.recursively_find_in()
+
+        existing_set = set(self.repo_list_dict.keys())
+        unvisited_set = existing_set - self.visited_set
+
+        # remove unvisited repository info from the database
+        for unvisited_repo_path in unvisited_set:
+            del self.repo_list_dict[unvisited_repo_path]
+
+        return self.repo_list_dict
+
+
+def build_or_update_repo_list(repo_list_path, root):
+    """
+
+    :param str repo_list_path:
+    :param str root:
+    :return:
+    :rtype: list(dict)
+    """
+
+    ''' read existing repository list '''
     if os.path.exists(repo_list_path):
-        with open(repo_list_path, 'rb') as repo_list_file:
-            repo_list = pickle.load(repo_list_file)
+        with open(repo_list_path, 'rb') as repo_list_read:
+            repo_list_dict = pickle.load(repo_list_read)
     else:
-        repo_list = []
-    return repo_list
+        repo_list_dict = dict()
+
+    # architecture of repo_list_dict
+    # repo_list_dict = { <repo_path> : {
+    #                                    'branch' : default_branch_str,
+    #                                    'submodule_info' : submodule_info_dict,
+    #                                  }
+    #                  }
+
+    ''' update repository list '''
+    updater = RepoListUpdater(root, repo_list_dict)
+    updated_repo_list_dict = updater.run_this()
+
+    ''' write repository list '''
+    with open(repo_list_path, 'wb') as repo_list_write:
+        pickle.dump(updated_repo_list_dict, repo_list_write)
+
+    return updated_repo_list_dict
 
 
-def process_repos(repo_list):
+def process_repo_info(repo_info):
+    git_util.update_repository(repo_info['path'], branch=repo_info['branch'],
+                               submodule_info=repo_info['submodule_info'])
+
+
+def process_repo_list(repo_list):
     random.shuffle(repo_list)
-    for repo_info in repo_list:
-        git_util.update_repository(repo_info['path'])
+    return map(process_repo_info, repo_list)
 
 
 def updater_processor(argv):
     script, repo_list_path, root = argv
-    repo_list = build_or_update_repo_list(repo_list_path)
-    process_repos(repo_list)
+    repo_list_dict = build_or_update_repo_list(repo_list_path, root)
+    process_repo_list(repo_list_dict)
 
 
 if __name__ == '__main__':
