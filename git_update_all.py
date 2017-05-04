@@ -214,7 +214,7 @@ def process_repo_list(repo_list_dict):
                  for key in repo_list_dict]
     random.shuffle(repo_list)
 
-    return [process_repo_info(repo_info) for repo_info in repo_list]
+    return list(map(process_repo_info, repo_list))
 
 
 def updater_processor(argv):
