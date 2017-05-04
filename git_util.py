@@ -446,15 +446,12 @@ def git_update_mine(path, branch='master', upstream_name='upstream', submodule_i
         # https://felipec.wordpress.com/2013/09/01/advanced-git-concepts-the-upstream-tracking-branch/
         result.append(git('rebase @{u}'))
 
-    if is_upstream_in_remote_list(path):
-        if is_branch_in_remote_branch_list(branch, upstream_name):
-            # if diff with upstream/branch seems to have some content, try to rebase
-            if parsed_fetch_result_dict.get('upstream', {'update':False})['update']:
-                result.append(git('rebase %s' % parsed_fetch_result_dict['upstream']['upstream branch']))
-                if 'upstream' not in parsed_fetch_result_dict:
-                    git_logger.debug("'upstream' not in parsed_fetch_result_dict")
-                    git_logger.debug("git_fetch_result_str = %s" % git_fetch_result_str)
-                    git_logger.debug("parsed_fetch_result_dict = %r" % parsed_fetch_result_dict)
+    if is_rebase_upstream_needed(branch, upstream_name):
+        result.append(git('rebase %s' % get_upstream_name_branch(branch, upstream_name)))
+        if 'upstream' not in parsed_fetch_result_dict:
+            git_logger.debug("'upstream' not in parsed_fetch_result_dict")
+            git_logger.debug("git_fetch_result_str = %s" % git_fetch_result_str)
+            git_logger.debug("parsed_fetch_result_dict = %r" % parsed_fetch_result_dict)
 
     branch_master, git_path_full, result_restore = checkout_chdir(original_full_path, branch_backup)
     result += result_restore
@@ -462,12 +459,30 @@ def git_update_mine(path, branch='master', upstream_name='upstream', submodule_i
     return result
 
 
+def is_rebase_upstream_needed(branch, upstream_name):
+    # if diff with upstream/branch seems to have some content, try to rebase
+    b_upstream_in_remote_list = is_upstream_in_remote_list_here(upstream_name)
+    b_branch_in_remote_branch_list = is_branch_in_remote_branch_list(branch, upstream_name)
+    if b_branch_in_remote_branch_list:
+        upstream_name_branch = get_upstream_name_branch(branch, upstream_name)
+        b_upstream_branch = git_diff(branch, '%s' % upstream_name_branch, b_verbose=False)
+    else:
+        b_upstream_branch = False
+
+    return b_upstream_in_remote_list and b_branch_in_remote_branch_list and b_upstream_branch
+
+
+def get_upstream_name_branch(branch, upstream_name):
+    upstream_name_branch = '%s/%s' % (upstream_name, branch)
+    return upstream_name_branch
+
+
 def git_diff_summary(obj1, obj2):
     return git('diff --summary %s %s' % (obj1, obj2)).strip()
 
 
-def git_diff(obj1, obj2):
-    return git('diff %s %s' % (obj1, obj2)).strip()
+def git_diff(obj1, obj2, b_verbose=True):
+    return git('diff %s %s' % (obj1, obj2), b_verbose=b_verbose).strip()
 
 
 def fetch_all_and_rebase(path, branch='master'):
@@ -582,10 +597,22 @@ def get_remote_list(repo_path, b_verbose=True):
     """
     backup_path = chdir(repo_path)
 
-    result_tuple = tuple(git('remote', b_verbose=b_verbose).splitlines())
+    result_tuple = get_remote_list_here(b_verbose)
 
     os.chdir(backup_path)
 
+    return result_tuple
+
+
+def get_remote_list_here(b_verbose=True):
+    """
+    Get the list of names of remote repositories from `git origin` command
+
+    :param bool b_verbose: True by default
+    :return: tuple containing remote repository names
+    :rtype: tuple(str)
+    """
+    result_tuple = tuple(git('remote', b_verbose=b_verbose).splitlines())
     return result_tuple
 
 
@@ -598,6 +625,17 @@ def is_upstream_in_remote_list(repo_path, b_verbose=False):
     :rtype: bool
     """
     return 'upstream' in get_remote_list(repo_path, b_verbose=b_verbose)
+
+
+def is_upstream_in_remote_list_here(upstream_name='upstream', b_verbose=False):
+    """
+
+    :param str upstream_name:
+    :param bool b_verbose:
+    :return:
+    :rtype: bool
+    """
+    return upstream_name in get_remote_list_here(b_verbose=b_verbose)
 
 
 def get_remote_info_from_git_config(repo_path):
