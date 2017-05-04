@@ -212,7 +212,14 @@ def process_repo_list(repo_list):
 
 
 def updater_processor(argv):
-    script, repo_list_path, root = argv
+    root = ''
+    repo_list_path = 'repo_list.pickle'
+
+    if 3 <= len(argv):
+        script, repo_list_path, root = argv
+    elif 2 == len(argv):
+        script, root = argv
+
     repo_list_dict = build_or_update_repo_list(repo_list_path, root)
     process_repo_list(repo_list_dict)
 
@@ -220,5 +227,4 @@ def updater_processor(argv):
 if __name__ == '__main__':
     import sys
 
-    if len(sys.argv) == 2:
-        git_update_all(sys.argv[1])
+    updater_processor(sys.argv)
