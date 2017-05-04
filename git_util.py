@@ -196,7 +196,7 @@ def git(cmd, b_verbose=True):
     git_cmd = 'git %s' % cmd
 
     if b_verbose:
-        git_logger.info(git_cmd)
+        git_logger.info('(%d) %s' % (os.getpid(), git_cmd))
 
     # ref : https://docs.python.org/2/library/subprocess.html#replacing-os-popen-os-popen2-os-popen3
     # ref : https://docs.python.org/2/library/subprocess.html#subprocess.PIPE
