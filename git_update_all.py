@@ -22,6 +22,10 @@ def init_ignore(ignore_filename='.git_update_all_ignore'):
 
         additional_set = set(additional_list)
         ignore_set = ignore_set.union(additional_set)
+    else:
+        with open(ignore_filename, 'w', encoding='utf8') as f_out:
+            for ignore_item in ignore_set:
+                f_out.write('%s\n' % ignore_item)
 
     ignore_list = tuple(sorted(list(ignore_set)))
 
