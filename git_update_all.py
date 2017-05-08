@@ -49,10 +49,7 @@ class GitRepositoryUpdater(find_git_repos.RecursiveGitRepositoryFinderBase):
             remote_name_list = git_util.get_far_remote_name_list(remote_info)
             if remote_name_list:
                 # http://stackoverflow.com/questions/7634715/python-decoding-unicode-is-not-supported
-                try:
-                    path_string = repo_path.encode('cp949')
-                except UnicodeEncodeError:
-                    path_string = repo_path.encode('utf8')
+                path_string = repo_path
 
                 message_string = "*** updating %s ***" % path_string
                 git_util.git_logger.info(message_string)
