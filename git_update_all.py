@@ -39,6 +39,11 @@ ignore_list_global = init_ignore()
 
 
 class GitRepositoryUpdater(find_git_repos.RecursiveGitRepositoryFinderBase):
+    def __init__(self, root_path, file_name_spec, b_verbose=False, processing_indication_str='adding'):
+        super(GitRepositoryUpdater, self).__init__(root_path, file_name_spec, b_verbose)
+
+        self.processing_indication_template = '*** ' + processing_indication_str + ' %s ***'
+
     def process_git_folder(self, repo_path):
         if not is_ignore(repo_path):
             # if this repo path is not in the ignore list
@@ -51,7 +56,7 @@ class GitRepositoryUpdater(find_git_repos.RecursiveGitRepositoryFinderBase):
                 # http://stackoverflow.com/questions/7634715/python-decoding-unicode-is-not-supported
                 path_string = repo_path
 
-                message_string = "*** updating %s ***" % path_string
+                message_string = self.processing_indication_template % path_string
                 git_util.git_logger.info(message_string)
 
                 # if repository does not have the branch 'master' try to set a different one
