@@ -217,7 +217,7 @@ def is_git_error(txt):
     :return:
     :rtype: bool
     """
-    b_error = re.findall(r'^(.*?(\bfatal\b)[^$]*)$', txt, re.I) \
+    b_error = re.findall(r'^(.*?(\bfatal\b)[^$]*)$', txt, re.I | re.MULTILINE) \
               or re.findall(r'^(.*?(\bCONFLICT\b)[^$]*)$', txt, re.I | re.MULTILINE) \
               or re.findall(r'^(.*?(\berror\b)[^$]*)$', txt, re.I)
     return b_error
