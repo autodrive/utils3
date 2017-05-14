@@ -256,8 +256,11 @@ def updater_processor(argv):
             raise ValueError('%s does not exist' % root)
     elif 3 <= len(argv):
         script, repo_list_path, root = argv
-        with open(repo_list_path, 'rb') as repo_list_read:
-            repo_list_dict = pickle.load(repo_list_read)
+        if not os.path.exists(root):
+            raise ValueError('%s does not exist' % root)
+        elif not os.path.isdir(root):
+            raise ValueError('%s not a path' % root)
+        repo_list_dict = build_or_update_repo_list(repo_list_path, root)
     else:
         raise ValueError(str(argv))
 
