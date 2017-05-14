@@ -233,6 +233,8 @@ def updater_processor(argv):
     start_time_sec = time.time()
     repo_list_path = 'repo_list.pickle'
 
+    b_fetch_rebase = True
+
     if 1 == len(argv):
         if not os.path.exists(repo_list_path):
             if os.path.isfile(repo_list_path):
@@ -254,17 +256,28 @@ def updater_processor(argv):
                 raise ValueError('%s type not supported for now' % root)
         else:
             raise ValueError('%s does not exist' % root)
-    elif 3 <= len(argv):
+    elif 3 == len(argv):
         script, repo_list_path, root = argv
         if not os.path.exists(root):
             raise ValueError('%s does not exist' % root)
         elif not os.path.isdir(root):
             raise ValueError('%s not a path' % root)
         repo_list_dict = build_or_update_repo_list(repo_list_path, root)
+    elif 4 == len(argv):
+        script, repo_list_path, root, cmd = argv
+        if not os.path.exists(root):
+            raise ValueError('%s does not exist' % root)
+        elif not os.path.isdir(root):
+            raise ValueError('%s not a path' % root)
+        repo_list_dict = build_or_update_repo_list(repo_list_path, root)
+
+        if 'False' == cmd:
+            b_fetch_rebase = False
     else:
         raise ValueError(str(argv))
 
-    process_repo_list(repo_list_dict)
+    if b_fetch_rebase:
+        process_repo_list(repo_list_dict)
     end_time_sec = time.time()
     git_util.git_logger.debug('elapsed time = %g(sec)' % (end_time_sec - start_time_sec))
     git_util.git_logger.debug('=== updater_processor() end '.ljust(width, '='))
