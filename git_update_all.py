@@ -236,14 +236,7 @@ def updater_processor(argv):
     b_fetch_rebase = True
 
     if 1 == len(argv):
-        if not os.path.exists(repo_list_path):
-            if os.path.isfile(repo_list_path):
-                with open(repo_list_path, 'rb') as repo_list_read:
-                    repo_list_dict = pickle.load(repo_list_read)
-            else:
-                raise ValueError('%s is not a file' % repo_list_path)
-        else:
-            raise ValueError('%s does not exist' % repo_list_path)
+        repo_list_dict = load_repo_dict(repo_list_path)
     elif 2 == len(argv):
         script, root = argv
         repo_list_dict = process_arguments(repo_list_path, root)
@@ -264,6 +257,18 @@ def updater_processor(argv):
     end_time_sec = time.time()
     git_util.git_logger.debug('elapsed time = %g(sec)' % (end_time_sec - start_time_sec))
     git_util.git_logger.debug('=== updater_processor() end '.ljust(width, '='))
+
+
+def load_repo_dict(repo_list_path):
+    if not os.path.exists(repo_list_path):
+        if os.path.isfile(repo_list_path):
+            with open(repo_list_path, 'rb') as repo_list_read:
+                repo_list_dict = pickle.load(repo_list_read)
+        else:
+            raise ValueError('%s is not a file' % repo_list_path)
+    else:
+        raise ValueError('%s does not exist' % repo_list_path)
+    return repo_list_dict
 
 
 def process_arguments(repo_list_path, root):
