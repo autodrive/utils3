@@ -244,7 +244,16 @@ def updater_processor(argv):
             raise ValueError('%s does not exist' % repo_list_path)
     elif 2 == len(argv):
         script, root = argv
-        repo_list_dict = build_or_update_repo_list(repo_list_path, root)
+        if os.path.exists(root):
+            if os.path.isdir(root):
+                repo_list_dict = build_or_update_repo_list(repo_list_path, root)
+            elif os.path.isfile(root):
+                with open(root, 'rb') as repo_list_read:
+                    repo_list_dict = pickle.load(repo_list_read)
+            else:
+                raise ValueError('%s type not supported for now' % root)
+        else:
+            raise ValueError('%s does not exist' % root)
     elif 3 <= len(argv):
         script, repo_list_path, root = argv
         with open(repo_list_path, 'rb') as repo_list_read:
