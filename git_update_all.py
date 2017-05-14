@@ -246,30 +246,13 @@ def updater_processor(argv):
             raise ValueError('%s does not exist' % repo_list_path)
     elif 2 == len(argv):
         script, root = argv
-        if os.path.exists(root):
-            if os.path.isdir(root):
-                repo_list_dict = build_or_update_repo_list(repo_list_path, root)
-            elif os.path.isfile(root):
-                with open(root, 'rb') as repo_list_read:
-                    repo_list_dict = pickle.load(repo_list_read)
-            else:
-                raise ValueError('%s type not supported for now' % root)
-        else:
-            raise ValueError('%s does not exist' % root)
+        repo_list_dict = process_arguments(repo_list_path, root)
     elif 3 == len(argv):
         script, repo_list_path, root = argv
-        if not os.path.exists(root):
-            raise ValueError('%s does not exist' % root)
-        elif not os.path.isdir(root):
-            raise ValueError('%s not a path' % root)
-        repo_list_dict = build_or_update_repo_list(repo_list_path, root)
+        repo_list_dict = process_arguments(repo_list_path, root)
     elif 4 == len(argv):
         script, repo_list_path, root, cmd = argv
-        if not os.path.exists(root):
-            raise ValueError('%s does not exist' % root)
-        elif not os.path.isdir(root):
-            raise ValueError('%s not a path' % root)
-        repo_list_dict = build_or_update_repo_list(repo_list_path, root)
+        repo_list_dict = process_arguments(repo_list_path, root)
 
         if 'False' == cmd:
             b_fetch_rebase = False
@@ -281,6 +264,20 @@ def updater_processor(argv):
     end_time_sec = time.time()
     git_util.git_logger.debug('elapsed time = %g(sec)' % (end_time_sec - start_time_sec))
     git_util.git_logger.debug('=== updater_processor() end '.ljust(width, '='))
+
+
+def process_arguments(repo_list_path, root):
+    if os.path.exists(root):
+        if os.path.isdir(root):
+            repo_list_dict = build_or_update_repo_list(repo_list_path, root)
+        elif os.path.isfile(root):
+            with open(root, 'rb') as repo_list_read:
+                repo_list_dict = pickle.load(repo_list_read)
+        else:
+            raise ValueError('%s type not supported for now' % root)
+    else:
+        raise ValueError('%s does not exist' % root)
+    return repo_list_dict
 
 
 if __name__ == '__main__':
