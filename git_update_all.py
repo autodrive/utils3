@@ -224,6 +224,10 @@ def process_repo_list(repo_list_dict):
 
 
 def updater_processor(argv):
+    # no argument : process [default filename].pickle
+    # one argument : if path, update under the path and save to the default filename,
+    #                if pickle file, process the paths in the file
+    # two arguments : (usually) one path and one pickle file :  update below the path. overwrite to the pickle file.
     width = 40
     git_util.git_logger.debug('=== updater_processor() start '.ljust(width, '='))
     start_time_sec = time.time()
