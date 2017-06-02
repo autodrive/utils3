@@ -22,6 +22,10 @@ def init_ignore(ignore_filename='.git_update_all_ignore'):
 
         additional_set = set(additional_list)
         ignore_set = ignore_set.union(additional_set)
+    else:
+        with open(ignore_filename, 'w', encoding='utf8') as f_out:
+            for ignore_item in ignore_set:
+                f_out.write('%s\n' % ignore_item)
 
     ignore_list = tuple(sorted(list(ignore_set)))
 
@@ -35,6 +39,11 @@ ignore_list_global = init_ignore()
 
 
 class GitRepositoryUpdater(find_git_repos.RecursiveGitRepositoryFinderBase):
+    def __init__(self, root_path, file_name_spec, b_verbose=False, processing_indication_str='adding'):
+        super(GitRepositoryUpdater, self).__init__(root_path, file_name_spec, b_verbose)
+
+        self.processing_indication_template = '*** ' + processing_indication_str + ' %s ***'
+
     def process_git_folder(self, repo_path):
         if not is_ignore(repo_path):
             # if this repo path is not in the ignore list
@@ -45,12 +54,9 @@ class GitRepositoryUpdater(find_git_repos.RecursiveGitRepositoryFinderBase):
             remote_name_list = git_util.get_far_remote_name_list(remote_info)
             if remote_name_list:
                 # http://stackoverflow.com/questions/7634715/python-decoding-unicode-is-not-supported
-                try:
-                    path_string = repo_path.encode('cp949')
-                except UnicodeEncodeError:
-                    path_string = repo_path.encode('utf8')
+                path_string = repo_path
 
-                message_string = "*** updating %s ***" % path_string
+                message_string = self.processing_indication_template % path_string
                 git_util.git_logger.info(message_string)
 
                 # if repository does not have the branch 'master' try to set a different one
@@ -218,26 +224,65 @@ def process_repo_list(repo_list_dict):
 
 
 def updater_processor(argv):
+    # no argument : process [default filename].pickle
+    # one argument : if path, update under the path and save to the default filename,
+    #                if pickle file, process the paths in the file
+    # two arguments : (usually) one path and one pickle file :  update below the path. overwrite to the pickle file.
     width = 40
     git_util.git_logger.debug('=== updater_processor() start '.ljust(width, '='))
     start_time_sec = time.time()
     repo_list_path = 'repo_list.pickle'
 
-    if 3 <= len(argv):
-        script, repo_list_path, root = argv
-        with open(repo_list_path, 'rb') as repo_list_read:
-            repo_list_dict = pickle.load(repo_list_read)
+    b_fetch_rebase = True
+
+    if 1 == len(argv):
+        repo_list_dict = load_repo_dict(repo_list_path)
     elif 2 == len(argv):
         script, root = argv
-        repo_list_dict = build_or_update_repo_list(repo_list_path, root)
-    else:
-        with open(repo_list_path, 'rb') as repo_list_read:
-            repo_list_dict = pickle.load(repo_list_read)
+        repo_list_dict = process_arguments(repo_list_path, root)
+    elif 3 == len(argv):
+        script, repo_list_path, root = argv
+        repo_list_dict = process_arguments(repo_list_path, root)
+    elif 4 == len(argv):
+        script, repo_list_path, root, cmd = argv
+        repo_list_dict = process_arguments(repo_list_path, root)
 
-    process_repo_list(repo_list_dict)
+        if 'False' == cmd:
+            b_fetch_rebase = False
+    else:
+        raise ValueError(str(argv))
+
+    if b_fetch_rebase:
+        process_repo_list(repo_list_dict)
     end_time_sec = time.time()
     git_util.git_logger.debug('elapsed time = %g(sec)' % (end_time_sec - start_time_sec))
     git_util.git_logger.debug('=== updater_processor() end '.ljust(width, '='))
+
+
+def load_repo_dict(repo_list_path):
+    if not os.path.exists(repo_list_path):
+        if os.path.isfile(repo_list_path):
+            with open(repo_list_path, 'rb') as repo_list_read:
+                repo_list_dict = pickle.load(repo_list_read)
+        else:
+            raise ValueError('%s is not a file' % repo_list_path)
+    else:
+        raise ValueError('%s does not exist' % repo_list_path)
+    return repo_list_dict
+
+
+def process_arguments(repo_list_path, root):
+    if os.path.exists(root):
+        if os.path.isdir(root):
+            repo_list_dict = build_or_update_repo_list(repo_list_path, root)
+        elif os.path.isfile(root):
+            with open(root, 'rb') as repo_list_read:
+                repo_list_dict = pickle.load(repo_list_read)
+        else:
+            raise ValueError('%s type not supported for now' % root)
+    else:
+        raise ValueError('%s does not exist' % root)
+    return repo_list_dict
 
 
 if __name__ == '__main__':

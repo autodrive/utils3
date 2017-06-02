@@ -112,3 +112,4 @@ test_init_ignore.txt
 # sample git repo list
 test_find_git_repos.txt
 repo_list.pickle
+repo_list*.pickle
