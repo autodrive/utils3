@@ -703,9 +703,12 @@ def get_section_key(config_parser, section_key):
     section_info_dict = {}
     for section in sections:
         if section.startswith(section_key):
-            remote_section_name = section.split()[1].strip().strip('"')
+            # sometimes section is just one word. (e.g. submodule?)  In this case, section_split[1] will cause index error
+            section_split = section.split()
+            if 2 <= len(section_split):
+                remote_section_name = section_split[1].strip().strip('"')
 
-            section_info_dict[remote_section_name] = dict(config_parser.items(section))
+                section_info_dict[remote_section_name] = dict(config_parser.items(section))
     return section_info_dict
 
 
