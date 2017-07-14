@@ -19,12 +19,16 @@ def main(argv):
 def get_remote_list_from_git_remote(repo_path=os.getcwd()):
     # make git run on a given path
     cmd = 'remote'
-    git_path_spec = "-C '%s'" % repo_path
-
-    remotes_str = git_util.git(' '.join((git_path_spec, cmd)))
+    remotes_str = git_path(cmd, repo_path)
     remotes_list = remotes_str.splitlines()
 
     return tuple(remotes_list)
+
+
+def git_path(cmd, repo_path=os.getcwd()):
+    git_path_spec = "-C '%s'" % repo_path
+    git_result_str = git_util.git(' '.join((git_path_spec, cmd)))
+    return git_result_str
 
 
 if __name__ == '__main__':
