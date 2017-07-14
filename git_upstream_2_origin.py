@@ -20,17 +20,20 @@ def main(argv):
 
 def get_remote_branch_list(repo_path):
     branch_remotes_str = git_path('branch -r', repo_path)
-    branch_remote_list = tuple([branch_name.strip() for branch_name in branch_remotes_str.splitlines()])
-    return branch_remote_list
+    branch_remote_list = splitlines_strip(branch_remotes_str)
+    return tuple(branch_remote_list)
+
+
+def splitlines_strip(string):
+    result_list = [line.strip() for line in string.splitlines()]
+    return result_list
 
 
 def get_remote_list_from_git_remote(repo_path=os.getcwd()):
     # make git run on a given path
-    cmd = 'remote'
-    remotes_str = git_path(cmd, repo_path)
-    remotes_list = remotes_str.splitlines()
+    remotes_str = git_path('remote', repo_path)
 
-    return tuple(remotes_list)
+    return tuple(splitlines_strip(remotes_str))
 
 
 def git_path(cmd, repo_path=os.getcwd()):
