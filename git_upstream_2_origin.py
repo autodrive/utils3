@@ -13,6 +13,11 @@ def main(argv):
         # default
         repo_path = os.getcwd()
 
+    if 2 < len(argv):
+        b_checkout_force = argv[2].lower().startswith('true')
+    else:
+        b_checkout_force = False
+
     remotes_list = get_remote_list_from_git_remote(repo_path)
     print(remotes_list)
 
@@ -39,7 +44,10 @@ def main(argv):
                 pprint.pprint(delta_set)
 
                 for missing_upstream_branch in delta_set:
-                    git_path('checkout %s' % missing_upstream_branch, repo_path)
+                    if b_checkout_force:
+                        git_path('checkout %s --force' % missing_upstream_branch, repo_path)
+                    else:
+                        git_path('checkout %s' % missing_upstream_branch, repo_path)
                     git_path('push origin', repo_path)
 
         else:
