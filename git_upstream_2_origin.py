@@ -22,8 +22,7 @@ def main(argv):
     remote_branch_dict = {}
 
     for remote_branch_name_str in branch_remote_list:
-        remote_name = remote_branch_name_str[:remote_branch_name_str.index('/')]
-        branch_name = remote_branch_name_str[(remote_branch_name_str.index('/') + 1):]
+        remote_name, branch_name = remote_branch_name_str.split('/', maxsplit=1)
         remote_branch_dict[remote_name] = remote_branch_dict.get(remote_name, []) + [branch_name]
 
     pprint.pprint(remote_branch_dict)
