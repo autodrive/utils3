@@ -13,7 +13,8 @@ def main(argv):
 
     git_path_spec = "-C '%s'" % repo_path
 
-    remotes_list = git_util.git(' '.join((git_path_spec, 'remote')))
+    remotes_str = git_util.git(' '.join((git_path_spec, 'remote')))
+    remotes_list = remotes_str.splitlines()
     print(remotes_list)
 
 
