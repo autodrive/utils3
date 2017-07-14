@@ -933,10 +933,36 @@ def delete_all_tags_local_repo(repo_name='origin', b_verbose=False):
     return result
 
 
-def git_path(cmd, repo_path=os.getcwd()):
-    git_path_spec = "-C '%s'" % repo_path
-    git_result_str = git(' '.join((git_path_spec, cmd)))
-    return git_result_str
+def splitlines_strip(string):
+    result_list = [line.strip() for line in string.splitlines()]
+    return result_list
+
+
+class Git(object):
+    """
+    Interface to git
+    """
+
+    def __init__(self, repo_path=os.getcwd(), b_verbose=True):
+        self.repo_path = repo_path
+        self.b_verbose = b_verbose
+
+    def __call__(self, cmd):
+        git_path_spec = "-C '%s'" % self.repo_path
+        git_result_str = git(' '.join((git_path_spec, cmd)), b_verbose=self.b_verbose)
+        return git_result_str
+
+    def get_remote_list_from_git_remote(self):
+        # make git run on a given path
+        remotes_str = self('remote')
+
+        return tuple(splitlines_strip(remotes_str))
+
+    def get_remote_branch_list(self):
+        branch_remotes_str = self('branch -r')
+        branch_remote_list = splitlines_strip(branch_remotes_str)
+
+        return tuple(branch_remote_list)
 
 
 if "__main__" == __name__:
