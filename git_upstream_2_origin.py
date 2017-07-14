@@ -38,6 +38,10 @@ def main(argv):
                 print('delta_set =')
                 pprint.pprint(delta_set)
 
+                for missing_upstream_branch in delta_set:
+                    git_path('checkout %s' % missing_upstream_branch, repo_path)
+                    git_path('push origin', repo_path)
+
         else:
             ValueError('upstream not in remote : %r' % remote_set)
     elif 1 == len(remote_set):
@@ -46,6 +50,7 @@ def main(argv):
         print('no remote')
     else:
         raise ValueError('# repository = %r' % len(remote_set))
+
 
 def organize_remote_branch_dict(git_branch_r_list):
     remote_branch_dict = {}
