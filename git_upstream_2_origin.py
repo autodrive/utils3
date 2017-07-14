@@ -5,18 +5,7 @@ import sys
 import git_util
 
 
-def main(argv):
-    # repo path
-    if 1 < len(argv):
-        repo_path = argv[1]
-    else:
-        # default
-        repo_path = os.getcwd()
-
-    if 2 < len(argv):
-        b_checkout_force = argv[2].lower().startswith('true')
-    else:
-        b_checkout_force = False
+def push_missing_upstream_branches(repo_path=os.getcwd(), b_checkout_force=False):
 
     remotes_list = get_remote_list_from_git_remote(repo_path)
     print(remotes_list)
@@ -95,4 +84,16 @@ def git_path(cmd, repo_path=os.getcwd()):
 
 
 if __name__ == '__main__':
-    main(sys.argv)
+    # repo path
+    if 1 < len(sys.argv):
+        repository_path = sys.argv[1]
+    else:
+        # default
+        repository_path = os.getcwd()
+
+    if 2 < len(sys.argv):
+        b_should_checkout_by_force = sys.argv[2].lower().startswith('true')
+    else:
+        b_should_checkout_by_force = False
+
+    push_missing_upstream_branches(repository_path, b_should_checkout_by_force)
