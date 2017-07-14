@@ -964,6 +964,15 @@ class Git(object):
 
         return tuple(branch_remote_list)
 
+    def checkout_branch(self, branch_name):
+        return self('checkout %s' % branch_name)
+
+    def checkout_branch_force(self, branch_name):
+        return self('checkout %s --force' % branch_name)
+
+    def push_origin(self):
+        return self('push origin')
+
 
 if "__main__" == __name__:
     git('log')

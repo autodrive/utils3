@@ -1,5 +1,4 @@
 import os
-import pprint
 import sys
 
 import git_util
@@ -9,7 +8,6 @@ def push_missing_upstream_branches(repo_path=os.getcwd(), b_checkout_force=False
     git = git_util.Git(repo_path)
 
     remotes_list = git.get_remote_list_from_git_remote()
-    print(remotes_list)
 
     remote_set = set(remotes_list)
 
@@ -17,28 +15,23 @@ def push_missing_upstream_branches(repo_path=os.getcwd(), b_checkout_force=False
         if 'upstream' in remote_set:
 
             branch_remote_list = git.get_remote_branch_list()
-            print(branch_remote_list)
 
             remote_branch_dict = organize_remote_branch_dict(branch_remote_list)
-
-            pprint.pprint(remote_branch_dict)
 
             if 'upstream' in remote_branch_dict:
                 origin_branch_set = set(remote_branch_dict['origin'])
                 upstream_branch_set = set(remote_branch_dict['upstream'])
-                upstream_branch_set.remove('HEAD')
+                if 'HEAD' in upstream_branch_set:
+                    upstream_branch_set.remove('HEAD')
 
                 delta_set = upstream_branch_set - origin_branch_set
 
-                print('delta_set =')
-                pprint.pprint(delta_set)
-
                 for missing_upstream_branch in delta_set:
                     if b_checkout_force:
-                        git('checkout %s --force' % missing_upstream_branch, repo_path)
+                        git.checkout_branch_force(missing_upstream_branch)
                     else:
-                        git('checkout %s' % missing_upstream_branch, repo_path)
-                    git('push origin', repo_path)
+                        git.checkout_branch(missing_upstream_branch)
+                    git.push_origin()
 
         else:
             ValueError('upstream not in remote : %r' % remote_set)
