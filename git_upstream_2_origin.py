@@ -34,10 +34,10 @@ def push_missing_upstream_branches(repo_path=os.getcwd(), b_checkout_force=False
 
                 for missing_upstream_branch in delta_set:
                     if b_checkout_force:
-                        git_path('checkout %s --force' % missing_upstream_branch, repo_path)
+                        git_util.git_path('checkout %s --force' % missing_upstream_branch, repo_path)
                     else:
-                        git_path('checkout %s' % missing_upstream_branch, repo_path)
-                    git_path('push origin', repo_path)
+                        git_util.git_path('checkout %s' % missing_upstream_branch, repo_path)
+                    git_util.git_path('push origin', repo_path)
 
         else:
             ValueError('upstream not in remote : %r' % remote_set)
@@ -60,7 +60,7 @@ def organize_remote_branch_dict(git_branch_r_list):
 
 
 def get_remote_branch_list(repo_path):
-    branch_remotes_str = git_path('branch -r', repo_path)
+    branch_remotes_str = git_util.git_path('branch -r', repo_path)
     branch_remote_list = splitlines_strip(branch_remotes_str)
     return tuple(branch_remote_list)
 
@@ -72,15 +72,9 @@ def splitlines_strip(string):
 
 def get_remote_list_from_git_remote(repo_path=os.getcwd()):
     # make git run on a given path
-    remotes_str = git_path('remote', repo_path)
+    remotes_str = git_util.git_path('remote', repo_path)
 
     return tuple(splitlines_strip(remotes_str))
-
-
-def git_path(cmd, repo_path=os.getcwd()):
-    git_path_spec = "-C '%s'" % repo_path
-    git_result_str = git_util.git(' '.join((git_path_spec, cmd)))
-    return git_result_str
 
 
 if __name__ == '__main__':

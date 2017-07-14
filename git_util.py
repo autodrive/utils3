@@ -933,5 +933,11 @@ def delete_all_tags_local_repo(repo_name='origin', b_verbose=False):
     return result
 
 
+def git_path(cmd, repo_path=os.getcwd()):
+    git_path_spec = "-C '%s'" % repo_path
+    git_result_str = git(' '.join((git_path_spec, cmd)))
+    return git_result_str
+
+
 if "__main__" == __name__:
     git('log')
