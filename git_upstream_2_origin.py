@@ -1,4 +1,5 @@
 import os
+import pprint
 import sys
 
 import git_util
@@ -9,6 +10,7 @@ def main(argv):
     if 1 < len(argv):
         repo_path = argv[1]
     else:
+        # default
         repo_path = os.getcwd()
 
     remotes_list = get_remote_list_from_git_remote(repo_path)
@@ -16,6 +18,15 @@ def main(argv):
 
     branch_remote_list = get_remote_branch_list(repo_path)
     print(branch_remote_list)
+
+    remote_branch_dict = {}
+
+    for remote_branch_name_str in branch_remote_list:
+        remote_name = remote_branch_name_str[:remote_branch_name_str.index('/')]
+        branch_name = remote_branch_name_str[(remote_branch_name_str.index('/') + 1):]
+        remote_branch_dict[remote_name] = remote_branch_dict.get(remote_name, []) + [branch_name]
+
+    pprint.pprint(remote_branch_dict)
 
 
 def get_remote_branch_list(repo_path):
