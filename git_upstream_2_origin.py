@@ -14,9 +14,14 @@ def main(argv):
     remotes_list = get_remote_list_from_git_remote(repo_path)
     print(remotes_list)
 
+    branch_remote_list = get_remote_branch_list(repo_path)
+    print(branch_remote_list)
+
+
+def get_remote_branch_list(repo_path):
     branch_remotes_str = git_path('branch -r', repo_path)
     branch_remote_list = tuple([branch_name.strip() for branch_name in branch_remotes_str.splitlines()])
-    print(branch_remote_list)
+    return branch_remote_list
 
 
 def get_remote_list_from_git_remote(repo_path=os.getcwd()):
