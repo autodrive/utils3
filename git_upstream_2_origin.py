@@ -19,13 +19,19 @@ def main(argv):
     branch_remote_list = get_remote_branch_list(repo_path)
     print(branch_remote_list)
 
+    remote_branch_dict = organize_remote_branch_dict(branch_remote_list)
+
+    pprint.pprint(remote_branch_dict)
+
+
+def organize_remote_branch_dict(git_branch_r_list):
     remote_branch_dict = {}
 
-    for remote_branch_name_str in branch_remote_list:
+    for remote_branch_name_str in git_branch_r_list:
         remote_name, branch_name = remote_branch_name_str.split('/', maxsplit=1)
         remote_branch_dict[remote_name] = remote_branch_dict.get(remote_name, []) + [branch_name]
 
-    pprint.pprint(remote_branch_dict)
+    return remote_branch_dict
 
 
 def get_remote_branch_list(repo_path):
