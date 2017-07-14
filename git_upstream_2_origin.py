@@ -16,13 +16,36 @@ def main(argv):
     remotes_list = get_remote_list_from_git_remote(repo_path)
     print(remotes_list)
 
-    branch_remote_list = get_remote_branch_list(repo_path)
-    print(branch_remote_list)
+    remote_set = set(remotes_list)
 
-    remote_branch_dict = organize_remote_branch_dict(branch_remote_list)
+    if 1 < len(remote_set):
+        if 'upstream' in remote_set:
 
-    pprint.pprint(remote_branch_dict)
+            branch_remote_list = get_remote_branch_list(repo_path)
+            print(branch_remote_list)
 
+            remote_branch_dict = organize_remote_branch_dict(branch_remote_list)
+
+            pprint.pprint(remote_branch_dict)
+
+            if 'upstream' in remote_branch_dict:
+                origin_branch_set = set(remote_branch_dict['origin'])
+                upstream_branch_set = set(remote_branch_dict['upstream'])
+                upstream_branch_set.remove('HEAD')
+
+                delta_set = upstream_branch_set - origin_branch_set
+
+                print('delta_set =')
+                pprint.pprint(delta_set)
+
+        else:
+            ValueError('upstream not in remote : %r' % remote_set)
+    elif 1 == len(remote_set):
+        print('only one remote')
+    elif 0 == len(remote_set):
+        print('no remote')
+    else:
+        raise ValueError('# repository = %r' % len(remote_set))
 
 def organize_remote_branch_dict(git_branch_r_list):
     remote_branch_dict = {}
