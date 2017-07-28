@@ -36,10 +36,16 @@ def process_nb_node(nb_node):
     return nb_node
 
 
+def write_file(nb_node, nb_filename):
+    nbformat.write(nb_node, nb_filename)
+
+
 def process_nb_file(nb_filename):
     nb_node = read_file(nb_filename)
 
-    process_nb_node(nb_node)
+    processed_node = process_nb_node(nb_node)
+
+    write_file(processed_node, nb_filename)
 
 
 if __name__ == '__main__':
