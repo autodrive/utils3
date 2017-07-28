@@ -27,8 +27,13 @@ def read_file(nb_filename):
 
 def process_nb_node(nb_node):
     for cell in nb_node['cells']:
-        print('=' * 60)
-        print(cell)
+        if 'code' == cell['cell_type']:
+            if 'outputs' in cell:
+                cell['outputs'] = []
+            if 'execution_count' in cell:
+                cell['execution_count'] = None
+
+    return nb_node
 
 
 def process_nb_file(nb_filename):
