@@ -9,12 +9,29 @@ import sys
 
 import nbformat
 
+
+# Use this module to read or write notebook files as particular nbformat versions.
+
+def read_file(nb_filename):
+    assert os.path.exists(nb_filename)
+
+    txt = ''
+
+    with open(nb_filename, 'rb') as nb_file:
+        txt = nb_file.read()
+
+    nb_node = nbformat.reads(txt, nbformat.NO_CONVERT)
+    print(nb_node)
+    print(len(nb_node))
+    print(tuple(nb_node.keys()))
+
+
 if __name__ == '__main__':
 
     def main(argv):
         if 1 < len(argv):
             filename = argv[1]
-            print(filename, os.path.exists(filename))
+            read_file(filename)
         else:
             print("Usage : python %s <notebook file path>" % os.path.split(__file__)[-1])
             help(nbformat)
