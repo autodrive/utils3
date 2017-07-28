@@ -12,12 +12,12 @@ import nbformat
 if __name__ == '__main__':
 
     def main(argv):
-        help(nbformat)
         if 1 < len(argv):
             filename = argv[1]
-            print(filename)
+            print(filename, os.path.exists(filename))
         else:
             print("Usage : python %s <notebook file path>" % os.path.split(__file__)[-1])
+            help(nbformat)
 
 
     main(sys.argv)
