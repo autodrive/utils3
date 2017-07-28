@@ -4,11 +4,20 @@ Before release in class, output generated during testing and execution number ne
 Some people already wrote some scripts but have problem dealing with special characters  
 """
 
+import os
+import sys
+
 import nbformat
 
-
 if __name__ == '__main__':
-    def main():
-        help(nbformat)
 
-    main()
+    def main(argv):
+        help(nbformat)
+        if 1 < len(argv):
+            filename = argv[1]
+            print(filename)
+        else:
+            print("Usage : python %s <notebook file path>" % os.path.split(__file__)[-1])
+
+
+    main(sys.argv)
