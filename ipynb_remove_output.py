@@ -21,9 +21,20 @@ def read_file(nb_filename):
         txt = nb_file.read()
 
     nb_node = nbformat.reads(txt, nbformat.NO_CONVERT)
-    print(nb_node)
-    print(len(nb_node))
-    print(tuple(nb_node.keys()))
+
+    return nb_node
+
+
+def process_nb_node(nb_node):
+    for cell in nb_node['cells']:
+        print('=' * 60)
+        print(cell)
+
+
+def process_nb_file(nb_filename):
+    nb_node = read_file(nb_filename)
+
+    process_nb_node(nb_node)
 
 
 if __name__ == '__main__':
@@ -31,7 +42,7 @@ if __name__ == '__main__':
     def main(argv):
         if 1 < len(argv):
             filename = argv[1]
-            read_file(filename)
+            process_nb_file(filename)
         else:
             print("Usage : python %s <notebook file path>" % os.path.split(__file__)[-1])
             help(nbformat)
