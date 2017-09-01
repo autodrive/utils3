@@ -37,7 +37,7 @@ class TestGitUtil(MyTestGitUtilBase):
         git_path, sh_path, log_this, log_cumulative, git_logger = git_util.initialize(input_file_name)
         self.assertEqual('a', git_path)
         self.assertEqual('b', log_this)
-        self.assertEqual('test\\git.log', log_cumulative)
+        self.assertEqual('c', log_cumulative)
         self.assertEqual('d', sh_path)
         self.assertIsInstance(git_logger, logging.Logger)
 
