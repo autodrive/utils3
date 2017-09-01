@@ -1,6 +1,9 @@
 """
 Jupyter notebook could be good for educational purpose.
 Before release in class, output generated during testing and execution number need to be removed.
+
+Inspired by https://gist.github.com/damianavila/5305869
+Tested using python 3 anaconda 3.6.0
 """
 
 import os
