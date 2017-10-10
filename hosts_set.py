@@ -36,14 +36,32 @@ def read_host_info(filename):
     :return: dict
     """
     txt_lines = file_util.read_txt_lines(filename)
+
+    print('# lines = %d' % len(txt_lines))
+
     result = {'host_info': {}, 'comment': set()}
-    for txt in txt_lines:
+    for k, txt in enumerate(txt_lines):
+
+        serial_number_str = '%04d/%04d' % (k, len(txt_lines))
+
         if '#' == txt[0]:
             result['comment'].add(txt.strip())
         # if not comment
         else:
             address, hostname = txt.split()
-            result['host_info'][hostname.strip()] = address.strip()
+            hostname_strip = hostname.strip()
+            b_already = hostname_strip in result['host_info']
+            if b_already:
+                print("%s %s already known" % (serial_number_str, hostname_strip))
+            else:
+                result['host_info'][hostname_strip] = address.strip()
+                b_success = hostname_strip in result['host_info']
+                if b_success:
+                    print(
+                    "%s %s read successfully (%d)" % (serial_number_str, hostname_strip, len(result['host_info'])))
+                else:
+                    print("%s %s not read (%d)" % (serial_number_str, hostname_strip, len(result['host_info'])))
+
     return result
 
 
