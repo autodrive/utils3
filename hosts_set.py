@@ -47,7 +47,7 @@ def read_host_info(filename):
         if '#' == txt[0]:
             result['comment'].add(txt.strip())
         # if not comment
-        else:
+        elif txt.strip():
             address, hostname = txt.split()
             hostname_strip = hostname.strip()
             b_already = hostname_strip in result['host_info']
@@ -58,9 +58,11 @@ def read_host_info(filename):
                 b_success = hostname_strip in result['host_info']
                 if b_success:
                     print(
-                    "%s %s read successfully (%d)" % (serial_number_str, hostname_strip, len(result['host_info'])))
+                        "%s %s read successfully (%d)" % (serial_number_str, hostname_strip, len(result['host_info'])))
                 else:
                     print("%s %s not read (%d)" % (serial_number_str, hostname_strip, len(result['host_info'])))
+        else:
+            print("%s string empty" % serial_number_str)
 
     return result
 
