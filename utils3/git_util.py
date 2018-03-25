@@ -643,17 +643,34 @@ def get_remote_info_from_git_config(repo_path):
     Return dictionary of remotes of a repository
 
     {remote_name: {'url'          : url_to_remote_repository,
-                   'puttykeyfile' : puttykeyfile_name,
-                   'fetch'        : fetch_info}}
+                   'fetch_url'    : fetch_info}}
 
     :param string repo_path:
     :return: remote_info_dict
     :rtype: dict
 
     """
-    config_parser = get_git_config_parser(repo_path)
-
-    result = get_section_key(config_parser, 'remote')
+    result_txt = git('remote -v')
+    remote_info_list = result_txt.splitlines()
+    result = {}
+    for remote_info_line in remote_info_list:
+        remote_name, url, fetch, = remote_info_line.split()
+        fetch = fetch.strip('(').strip(')')
+        fetch_url_key = fetch + '_url'
+        if remote_name in result:
+            new_info = {fetch_url_key: url}
+            result[remote_name].update(new_info)
+            if 'url' not in result[remote_name]:
+                result[remote_name]['url'] = url
+        else:
+            result.update(
+                {
+                    remote_name: {
+                        'url': url,
+                        fetch_url_key: url,
+                    }
+                }
+            )
 
     return result
 

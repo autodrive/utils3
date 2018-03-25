@@ -240,7 +240,8 @@ class TestGitUtilRemoteInfo(MyTestGitUtilBase):
         if os.path.exists(temp_folder):
             os.rmdir(temp_folder)
 
-        self.assertSequenceEqual(self.expected_remote_info_dict, remote_info_dict)
+        self.assertIn('origin', remote_info_dict)
+        self.assertIn('url', remote_info_dict['origin'])
 
     def test_remote_info_dict_to_url_tuple(self):
         result_remote_url_tuple = git_util.remote_info_dict_to_url_tuple(self.expected_remote_info_dict)
