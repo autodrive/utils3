@@ -3,7 +3,7 @@ import random
 import re
 import unittest
 
-import utils3.utils3.git_util as git_util
+import utils3.git_util as git_util
 
 
 class TestRecursivelyFindPath(unittest.TestCase):

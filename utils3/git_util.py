@@ -14,7 +14,7 @@ import sys
 import time
 import urllib.parse
 
-import utils3.utils3.wapj_logger as wapj_logger
+import utils3.wapj_logger as wapj_logger
 
 # TODO : remote info of git-svn
 

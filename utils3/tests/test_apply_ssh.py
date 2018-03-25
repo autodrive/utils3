@@ -1,6 +1,6 @@
 import os
 import unittest
-import utils3.utils3.apply_ssh as apply_ssh
+import utils3.apply_ssh as apply_ssh
 
 
 current_path = os.getcwd()

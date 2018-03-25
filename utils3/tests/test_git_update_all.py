@@ -1,6 +1,6 @@
 import os
 import unittest
-import utils3.utils3.git_update_all as git_update_all
+import utils3.git_update_all as git_update_all
 
 
 class TestGitUpdateAll(unittest.TestCase):
