@@ -1,11 +1,7 @@
 import os
 import unittest
 
-test_run_path = os.getcwd()
-# os.chdir(os.pardir)
 import utils3.find_git_repos as find_git_repos
-
-os.chdir(test_run_path)
 
 
 class TestFindGitRepositories(unittest.TestCase):
