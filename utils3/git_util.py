@@ -14,7 +14,7 @@ import sys
 import time
 import urllib.parse
 
-import wapj_logger
+import utils3.utils3.wapj_logger as wapj_logger
 
 # TODO : remote info of git-svn
 
@@ -120,7 +120,7 @@ def recursively_find_git_path():
             name = os.path.splitext(filename)[0]
             if 'git' == name:
                 full_path = os.path.join(dirpath, filename)
-                # test a file is executable http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
+                # tests a file is executable http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
                 if os.path.isfile(full_path) and os.access(full_path, os.X_OK):
                     git_path = full_path
                     return git_path
@@ -137,7 +137,7 @@ def recursively_find_sh_path():
             name = os.path.splitext(filename)[0]
             if 'sh' == name:
                 full_path = os.path.join(dir_path, filename)
-                # test a file is executable http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
+                # tests a file is executable http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
                 if os.path.isfile(full_path) and os.access(full_path, os.X_OK):
                     sh_path = full_path
                     return sh_path
@@ -715,6 +715,9 @@ def get_section_key(config_parser, section_key):
 def get_git_config_parser(repo_path):
     git_config_path = os.path.join(repo_path, '.git')
     config_file_path = os.path.join(git_config_path, 'config')
+    if not os.path.exists(config_file_path):
+        raise ValueError('%s does not exist' % config_file_path)
+
     # config parser example, https://wiki.python.org/moin/ConfigParserExamples
     config_parser = cp.ConfigParser(strict=False)
     try:

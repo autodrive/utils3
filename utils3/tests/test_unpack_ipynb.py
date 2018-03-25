@@ -1,8 +1,8 @@
 import unittest
-from test_git_util import MyTestGitUtilBase
+from utils3.utils3.tests.test_git_util import MyTestGitUtilBase
 import os
 
-import unpack_ipynb as unpack
+import utils3.utils3.unpack_ipynb as unpack
 import math
 
 
@@ -40,7 +40,7 @@ class TestUnpackIpythonNotebookOneFile(MyTestGitUtilBase):
             if not os.path.exists(expected_nb_name):
                 raise IOError("File %.150s missing" % expected_nb_name)
 
-            # function under test
+            # function under tests
             unpack.unpack(expected_nb_name, b_verbose=True)
 
             with open(expected_py_name, encoding='utf8') as py_file:

@@ -2,8 +2,8 @@ import os
 import unittest
 
 test_run_path = os.getcwd()
-os.chdir(os.pardir)
-import find_git_repos
+# os.chdir(os.pardir)
+import utils3.utils3.find_git_repos as find_git_repos
 
 os.chdir(test_run_path)
 
@@ -17,7 +17,7 @@ class TestFindGitRepositories(unittest.TestCase):
         expected_set = set()
         sample_file_name = 'test_find_git_repos.txt'
         if not os.path.exists(sample_file_name):
-            sample_file_name = os.path.join('tests_longer', sample_file_name)
+            sample_file_name = os.path.join(sample_file_name)
 
         with open(sample_file_name, 'rt') as sample_file:
             for item in sample_file:

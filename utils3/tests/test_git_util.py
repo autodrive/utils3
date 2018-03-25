@@ -3,42 +3,40 @@ import os
 import tempfile
 import unittest
 
-current_path = os.getcwd()
-os.chdir(os.pardir)
-import git_util
-
-os.chdir(current_path)
+import utils3.utils3.git_util as git_util
 
 
 class MyTestGitUtilBase(unittest.TestCase):
     def setUp(self):
-        # assume this test is running in a subfolder
-        self.repo_path = os.path.abspath(os.pardir)
+        # assume this tests is running in a subfolder
+        self.repo_path = os.path.abspath(os.path.join(os.pardir, os.pardir))
 
         if os.path.exists('.git'):
             # if not, correct
             self.repo_path = os.getcwd()
 
-        self.test_path = os.path.join(self.repo_path, 'test')
+        self.test_path = os.getcwd()
 
     def tearDown(self):
         self.repo_path = ''
 
 
 class TestGitUtil(MyTestGitUtilBase):
-    # test git util
+    # tests git util
     def test_initialize(self):
         # check .ini file read correctly
 
         input_file_name = 'git_util.ini'
-        if os.path.exists('.git') and os.path.exists('test'):
-            input_file_name = os.path.join('test', input_file_name)
 
         git_path, sh_path, log_this, log_cumulative, git_logger = git_util.initialize(input_file_name)
-        self.assertEqual('a', git_path)
-        self.assertEqual('b', log_this)
-        self.assertEqual('c', log_cumulative)
-        self.assertEqual('d', sh_path)
+
+        with open('git_util.ini', 'r') as f:
+            input_txt = f.read()
+
+        self.assertIn(git_path, input_txt)
+        self.assertIn(log_this, input_txt)
+        self.assertIn(log_cumulative, input_txt)
+        self.assertIn(sh_path, input_txt)
         self.assertIsInstance(git_logger, logging.Logger)
 
     def test_initialize_logger(self):
@@ -66,7 +64,7 @@ class TestGitUtil(MyTestGitUtilBase):
 
         # git_util.git_logger.debug('%s %s' % ('test_is_host2()', os.getcwd()))
         if not os.path.exists(input_file_name):
-            input_file_name = os.path.join('test', input_file_name)
+            input_file_name = os.path.join('tests', input_file_name)
             repo_dir = os.getcwd()
         with open(input_file_name, 'rt') as input_file:
             host_name = input_file.read().strip()
@@ -80,8 +78,9 @@ class TestGitUtil(MyTestGitUtilBase):
 
     def test_get_remote_list(self):
         result = git_util.get_remote_list(os.getcwd(), b_verbose=False)
-        expected = ('origin', 'py2_upstream')
-        self.assertSequenceEqual(expected, result)
+        expected_set = set(('origin',))
+        for expected in expected_set:
+            self.assertIn(expected, result)
 
     def test_is_upstream_in_remote_list(self):
         result = git_util.is_upstream_in_remote_list(os.getcwd(), b_verbose=False)
@@ -157,7 +156,7 @@ Patch failed at 0000 Go back to constructing dashboards via the DOM.
         self.assertTrue(git_util.is_git_error(txt04_true))
 
     def test_is_git_warning(self):
-        text00_true = '''warning: unable to rmdir utils: Directory not empty
+        text00_true = '''warning: unable to rmdir utils3: Directory not empty
 Switched to branch 'master'
 '''
         self.assertTrue(git_util.is_git_warning(text00_true))

@@ -1,20 +1,16 @@
 import os
 import unittest
-
-test_run_path = os.getcwd()
-os.chdir(os.pardir)
-import git_update_all
-os.chdir(test_run_path)
+import utils3.utils3.git_update_all as git_update_all
 
 
 class TestGitUpdateAll(unittest.TestCase):
     def test_init_ignore(self):
-        ignore_path = os.path.join('test', 'test_init_ignore.txt')
+        ignore_path = os.path.join('test_init_ignore.txt')
         result_set = set(git_update_all.init_ignore(ignore_path))
 
         expected_base_set = set(['.cache', '.git', '$RECYCLE.BIN',])
 
-        # better way to test than this?
+        # better way to tests than this?
         if os.path.exists(ignore_path):
             with open(ignore_path, 'rt', encoding='utf8') as input_file:
                 expected_set = expected_base_set.union(set([line.strip() for line in input_file]))
@@ -23,7 +19,7 @@ class TestGitUpdateAll(unittest.TestCase):
         self.assertSetEqual(expected_set, result_set)
 
     def test_init_ignore_blank_line(self):
-        result = git_update_all.init_ignore(os.path.join('test', 'git_update_ignore_sample.txt'))
+        result = git_update_all.init_ignore(os.path.join('git_update_ignore_sample.txt'))
 
         result_set = set(result)
         expected_set = set(('a', 'b', 'c', '$RECYCLE.BIN', '.cache', '.git'))

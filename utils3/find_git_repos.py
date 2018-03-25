@@ -1,8 +1,7 @@
 import os
 
-import find_in
-import git_util
-
+import utils3.utils3.find_in as find_in
+import utils3.utils3.git_util as git_util
 
 # TODO : git-svn remote info?
 

@@ -2,7 +2,7 @@
 import os
 import unittest
 
-import git_util
+import utils3.utils3.git_util as git_util
 
 
 class TestRecursivelyFindPath(unittest.TestCase):
@@ -10,7 +10,7 @@ class TestRecursivelyFindPath(unittest.TestCase):
     tests in git_util related to recursive search seems taking much longer time than others
     """
     def test_recursively_find_git_path(self):
-        # function under test
+        # function under tests
         git_path = git_util.recursively_find_git_path()
         if git_path:
             self.assertTrue(os.path.exists(git_path))

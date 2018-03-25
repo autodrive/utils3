@@ -1,10 +1,10 @@
 import os
 import unittest
+import utils3.utils3.apply_ssh as apply_ssh
+
 
 current_path = os.getcwd()
-os.chdir(os.pardir)
-
-import apply_ssh
+# os.chdir(os.pardir)
 
 
 class TestApplySSHbitbucket(unittest.TestCase):
