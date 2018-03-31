@@ -1,3 +1,4 @@
+import os
 import unittest
 
 from .. import git_util
@@ -47,13 +48,16 @@ class TestGitUtilRemotes(unittest.TestCase):
 
     def test_get_remote_tag_list(self):
         result_list = git_util.get_remote_tag_list()
-        try:
-            with open('tags_list.txt', 'r') as f:
-                tags_list = [tag_str.strip() for tag_str in f.readlines()]
+        result_set = set(result_list)
 
-        except IOError as e:
-            # file might be missing
-            # make a list from git ls-remote
+        input_file_name = 'tags_list.txt'
+
+        if os.path.exists(input_file_name):
+            with open(input_file_name, 'r') as f:
+                tags_list = [tag_str.strip() for tag_str in f.readlines()]
+        else:
+            Warning('''file %s might be missing
+make a list from git ls-remote''' % (input_file_name))
             result_txt = git_util.git('ls-remote --tags')
             result_line_list = result_txt.splitlines()
 
@@ -78,7 +82,11 @@ class TestGitUtilRemotes(unittest.TestCase):
         # finished making a list from git ls-remote
 
         expected_set = set(tags_list)
-        self.assertSetEqual(expected_set, set(result_list))
+
+        self.assertFalse(expected_set - result_set, msg='''
+expected set = %r
+result_set = %r
+'''%(expected_set, result_set))
 
     def test_is_branch_in_remote_branch_list(self):
         self.assertTrue(git_util.is_branch_in_remote_branch_list('master', 'origin', False))
