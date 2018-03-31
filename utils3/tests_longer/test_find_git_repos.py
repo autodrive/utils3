@@ -29,16 +29,19 @@ Generating one''' % sample_file_name)
                     # print('test_find_git_repos() : possible_path =', possible_path)
 
                     # go up one level in the path
-                    possible_path = os.path.split(possible_path)[0]
-                    # if possible_path is a git repository, following folder should exist
-                    possible_git_path = os.path.join(possible_path, '.git')
-                    if os.path.exists(possible_git_path):
-                        # to know how many found
-                        counter += 1
-                        # write the repository path
-                        f.write(possible_path + '\n')
-                        # guess one repository might be enough for now?
+                    new_possible_path = os.path.split(possible_path)[0]
+                    if new_possible_path == possible_path:
                         break
+                    else:
+                        possible_path = new_possible_path
+                        # if possible_path is a git repository, following folder should exist
+                        possible_git_path = os.path.join(possible_path, '.git')
+                        if os.path.exists(possible_git_path) and os.path.isdir(possible_git_path):
+                            # to know how many found
+                            counter += 1
+                            # write the repository path
+                            f.write(possible_path + '\n')
+                            # guess one repository might be enough for now?
                 # if found none: print warning
                 if 1 > counter:
                     print("test_find_git_repos() : Could not find a git repository; please manually add to %s" % (sample_file_name))
