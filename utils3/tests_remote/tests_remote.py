@@ -6,7 +6,8 @@ from .. import git_util
 
 class TestGitUtilRemotes(unittest.TestCase):
     def test_get_remote_branch_list(self):
-        result_list = git_util.get_remote_branch_list()
+        # function under test
+        result_set = set(git_util.get_remote_branch_list())
 
         filename = 'remote_branch_list.txt'
         pattern_str = 'heads'
