@@ -29,12 +29,16 @@ class MyTestGitUtilBase(unittest.TestCase):
         print("%s() : unable to find file %s" % (test_method_name, input_file_name))
         if os.path.exists('tests') and os.path.isdir('tests'):
             input_file_name = os.path.join('tests', input_file_name)
+            if os.path.exists(input_file_name):
+                print("%s() : instead found %s" % (test_method_name, input_file_name))
         else:
             test_path = os.path.join('utils3', 'tests')
             if os.path.exists(test_path) and os.path.isdir(test_path):
                 input_file_name = os.path.join(test_path, input_file_name)
             else:
                 raise ValueError('Unable to decide test path; test is running at %s' % os.getcwd())
+            if os.path.exists(input_file_name):
+                print("%s() : instead found %s" % (test_method_name, input_file_name))
         return input_file_name
 
 
