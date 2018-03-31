@@ -1,23 +1,27 @@
+import os
 import unittest
 
-import git_util
+from .. import git_util
 
 
 class TestGitUtilRemotes(unittest.TestCase):
     def test_get_remote_branch_list(self):
-        result_list = git_util.get_remote_branch_list()
+        # function under test
+        result_set = set(git_util.get_remote_branch_list())
+        # sample file in the test script folder
+        filename = os.path.join(os.path.split(__file__)[0], 'remote_branch_list.txt')
 
-        filename = 'remote_branch_list.txt'
         pattern_str = 'heads'
 
         # get sample file
-        try:
+        if os.path.exists(filename):
             with open(filename, 'r') as f:
                 tags_list = [tag_str.strip() for tag_str in f.readlines()]
-
-        except IOError as e:
-            # file might be missing
+        else:
+            # if file missing
             # make a list from git ls-remote
+            Warning('''file %s might be missing
+make a list from git ls-remote''' % (filename))
             result_txt = git_util.git('ls-remote --%s' % pattern_str)
             result_line_list = result_txt.splitlines()
 
@@ -43,17 +47,24 @@ class TestGitUtilRemotes(unittest.TestCase):
         # finished making a list from git ls-remote
 
         expected_set = set(tags_list)
-        self.assertSetEqual(expected_set, set(result_list))
+
+        self.assertFalse(expected_set - result_set, msg='''
+expected set = %r
+result_set = %r
+'''%(expected_set, result_set))
 
     def test_get_remote_tag_list(self):
         result_list = git_util.get_remote_tag_list()
-        try:
-            with open('tags_list.txt', 'r') as f:
-                tags_list = [tag_str.strip() for tag_str in f.readlines()]
+        result_set = set(result_list)
 
-        except IOError as e:
-            # file might be missing
-            # make a list from git ls-remote
+        input_file_name = os.path.join(os.path.split(__file__)[0], 'tags_list.txt')
+
+        if os.path.exists(input_file_name):
+            with open(input_file_name, 'r') as f:
+                tags_list = [tag_str.strip() for tag_str in f.readlines()]
+        else:
+            print('''test_get_remote_tag_list() : file %s might be missing
+make a list from git ls-remote''' % (input_file_name))
             result_txt = git_util.git('ls-remote --tags')
             result_line_list = result_txt.splitlines()
 
@@ -61,7 +72,7 @@ class TestGitUtilRemotes(unittest.TestCase):
                 result_line_list.pop(0)
 
             tags_list = []
-            with open('tags_list.txt', 'w') as f_out:
+            with open(input_file_name, 'w') as f_out:
 
                 # build list of expected tags
                 for line_txt in result_line_list:
@@ -78,7 +89,11 @@ class TestGitUtilRemotes(unittest.TestCase):
         # finished making a list from git ls-remote
 
         expected_set = set(tags_list)
-        self.assertSetEqual(expected_set, set(result_list))
+
+        self.assertFalse(expected_set - result_set, msg='''
+expected set = %r
+result_set = %r
+'''%(expected_set, result_set))
 
     def test_is_branch_in_remote_branch_list(self):
         self.assertTrue(git_util.is_branch_in_remote_branch_list('master', 'origin', False))
