@@ -87,7 +87,7 @@ Generating one from the result''' % filename)
         self.assertDictEqual(expected, dict_host_info)
 
     def test_is_host2(self):
-        input_file_name = 'test_case_is_host.txt'
+        input_file_name = os.path.join(os.path.split(__file__)[0], 'test_case_is_host.txt')
         repo_dir = os.path.abspath(os.pardir)
 
         # git_util.git_logger.debug('%s %s' % ('test_is_host2()', os.getcwd()))
@@ -280,7 +280,8 @@ class TestGitUtilRemoteInfo(MyTestGitUtilBase):
         self.assertSequenceEqual(expected_remote_url_tuple, result_remote_url_tuple)
 
     def test_branch_info(self):
-        input_file_name = 'test_branch_info.txt'
+        input_file_name = os.path.join(os.path.split(__file__)[0], 'test_branch_info.txt')
+        
         if not os.path.exists(os.path.join(self.test_path, input_file_name)):
             input_file_name = self.get_new_input_file_name('test_branch_info', input_file_name)
         with open(input_file_name, 'r') as f:
