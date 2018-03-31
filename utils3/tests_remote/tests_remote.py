@@ -45,7 +45,11 @@ class TestGitUtilRemotes(unittest.TestCase):
         # finished making a list from git ls-remote
 
         expected_set = set(tags_list)
-        self.assertSetEqual(expected_set, set(result_list))
+
+        self.assertFalse(expected_set - result_set, msg='''
+expected set = %r
+result_set = %r
+'''%(expected_set, result_set))
 
     def test_get_remote_tag_list(self):
         result_list = git_util.get_remote_tag_list()
