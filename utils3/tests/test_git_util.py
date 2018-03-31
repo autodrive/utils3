@@ -65,16 +65,7 @@ class TestGitUtil(MyTestGitUtilBase):
         # git_util.git_logger.debug('%s %s' % ('test_is_host2()', os.getcwd()))
         if not os.path.exists(input_file_name):
             test_method_name = 'test_is_host2'
-            print("%s() : os.getcwd() == %s" % (test_method_name, os.getcwd()))
-            print("%s() : unable to find file %s" % (test_method_name, input_file_name))
-            if os.path.exists('tests') and os.path.isdir('tests'):
-                input_file_name = os.path.join('tests', input_file_name)
-            else:
-                test_path = os.path.join('utils3', 'tests')
-                if os.path.exists(test_path) and os.path.isdir(test_path):
-                    input_file_name = os.path.join(test_path, input_file_name)
-                else:
-                    raise ValueError('Unable to decide test path; test is running at %s' % os.getcwd())
+            input_file_name = self.get_new_input_file_name(test_method_name, input_file_name)
             repo_dir = os.getcwd()
         with open(input_file_name, 'rt') as input_file:
             host_name = input_file.read().strip()
@@ -85,6 +76,23 @@ class TestGitUtil(MyTestGitUtilBase):
         host_name += '*'
         result = git_util.is_host(host_name, repo_dir)
         self.assertFalse(result)
+
+    @staticmethod
+    def get_new_input_file_name(test_method_name, input_file_name):
+        """
+        Try to find a new input file name within the package architecture
+        """
+        print("%s() : os.getcwd() == %s" % (test_method_name, os.getcwd()))
+        print("%s() : unable to find file %s" % (test_method_name, input_file_name))
+        if os.path.exists('tests') and os.path.isdir('tests'):
+            input_file_name = os.path.join('tests', input_file_name)
+        else:
+            test_path = os.path.join('utils3', 'tests')
+            if os.path.exists(test_path) and os.path.isdir(test_path):
+                input_file_name = os.path.join(test_path, input_file_name)
+            else:
+                raise ValueError('Unable to decide test path; test is running at %s' % os.getcwd())
+        return input_file_name
 
     def test_get_remote_list(self):
         result = git_util.get_remote_list(os.getcwd(), b_verbose=False)
