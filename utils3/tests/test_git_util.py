@@ -15,6 +15,8 @@ class MyTestGitUtilBase(unittest.TestCase):
             # if not, correct
             self.repo_path = os.getcwd()
 
+        self.test_file_path = os.path.split(__file__)[0]
+
         self.test_path = os.getcwd()
 
     def tearDown(self):
@@ -74,9 +76,12 @@ class TestGitUtil(MyTestGitUtilBase):
         self.assertTrue(dict_hist_info)
         expected = {}
 
-        filename = os.path.join(self.test_path, 'test_case_host_info.txt')
+        filename = os.path.join(self.test_file_path, 'test_case_host_info.txt')
         if os.path.exists(filename):
             expected = eval(open(filename, 'r').read().strip())
+        else:
+            raise IOError('Unable to find expected file %s' % filename)
+        self.maxDiff = None
         self.assertDictEqual(expected, dict_hist_info)
 
     def test_is_host2(self):
