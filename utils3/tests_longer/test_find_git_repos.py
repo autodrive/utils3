@@ -25,7 +25,10 @@ class TestFindGitRepositories(unittest.TestCase):
             for item in sample_file:
                 expected_set.add(item.strip())
 
-        self.assertSetEqual(expected_set, git_repositories_found.found_set)
+        self.assertFalse(expected_set - git_repositories_found.found_set,
+        msg='''test_find_git_repos() : expected_set = %r
+result_set = %r
+''' % (expected_set, git_repositories_found.found_set))
 
 
 if __name__ == '__main__':
