@@ -3,9 +3,9 @@
 
 import sys
 
-import find_git_repos
-import git_update_all
-import git_util
+from . import find_git_repos
+from . import git_update_all
+from . import git_util
 
 
 def main(argv):
