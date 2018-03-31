@@ -15,6 +15,7 @@ class TestFindGitRepositories(unittest.TestCase):
 
         if not os.path.exists(sample_file_name):
             # package architecture path
+            # *** Warning *** current file generated this way may not be able to detect problem situation
             sample_file_name = os.path.join(os.getcwd(), 'utils3', 'tests_longer', sample_file_name)
             if not os.path.exists(sample_file_name):
                 with open(sample_file_name, 'wt') as f:
