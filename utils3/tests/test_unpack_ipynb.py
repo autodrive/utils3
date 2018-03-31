@@ -1,8 +1,8 @@
 import unittest
-from test_git_util import MyTestGitUtilBase
+from .test_git_util import MyTestGitUtilBase
 import os
 
-import unpack_ipynb as unpack
+from .. import unpack_ipynb as unpack
 import math
 
 
@@ -10,7 +10,11 @@ class TestUnpackIpythonNotebookOneFile(MyTestGitUtilBase):
     def setUp(self):
         super(TestUnpackIpythonNotebookOneFile, self).setUp()
 
-        self.test_file_name = tuple([os.path.join(self.test_path, filename) for filename in ('test_unpack_00', 'test_unpack_01')])
+        # update self.test_file_path if necessary
+        if os.path.split(__file__)[0] != self.test_file_path:
+            self.test_file_path = os.path.split(__file__)[0]
+
+        self.test_file_name = tuple([os.path.join(self.test_file_path, filename) for filename in ('test_unpack_00', 'test_unpack_01')])
         self.sample_file_indicator = 'sample'
         self.python_ext = 'py'
         self.notebook_ext = 'ipynb'
@@ -38,9 +42,11 @@ class TestUnpackIpythonNotebookOneFile(MyTestGitUtilBase):
             expected_nb_name = os.path.abspath('.'.join((test_file_name, self.notebook_ext)))
 
             if not os.path.exists(expected_nb_name):
-                raise IOError("File %.150s missing" % expected_nb_name)
+                raise IOError('''File %.150s missing
+__file__ = %s
+self.test_file_path = %s''' % (expected_nb_name, __file__, self.test_file_path))
 
-            # function under test
+            # function under tests
             unpack.unpack(expected_nb_name, b_verbose=True)
 
             with open(expected_py_name, encoding='utf8') as py_file:

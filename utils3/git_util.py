@@ -14,7 +14,7 @@ import sys
 import time
 import urllib.parse
 
-import wapj_logger
+from . import wapj_logger
 
 # TODO : remote info of git-svn
 
@@ -120,7 +120,7 @@ def recursively_find_git_path():
             name = os.path.splitext(filename)[0]
             if 'git' == name:
                 full_path = os.path.join(dirpath, filename)
-                # test a file is executable http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
+                # tests a file is executable http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
                 if os.path.isfile(full_path) and os.access(full_path, os.X_OK):
                     git_path = full_path
                     return git_path
@@ -137,7 +137,7 @@ def recursively_find_sh_path():
             name = os.path.splitext(filename)[0]
             if 'sh' == name:
                 full_path = os.path.join(dir_path, filename)
-                # test a file is executable http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
+                # tests a file is executable http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
                 if os.path.isfile(full_path) and os.access(full_path, os.X_OK):
                     sh_path = full_path
                     return sh_path
@@ -643,17 +643,34 @@ def get_remote_info_from_git_config(repo_path):
     Return dictionary of remotes of a repository
 
     {remote_name: {'url'          : url_to_remote_repository,
-                   'puttykeyfile' : puttykeyfile_name,
-                   'fetch'        : fetch_info}}
+                   'fetch_url'    : fetch_info}}
 
     :param string repo_path:
     :return: remote_info_dict
     :rtype: dict
 
     """
-    config_parser = get_git_config_parser(repo_path)
-
-    result = get_section_key(config_parser, 'remote')
+    result_txt = git('remote -v')
+    remote_info_list = result_txt.splitlines()
+    result = {}
+    for remote_info_line in remote_info_list:
+        remote_name, url, fetch, = remote_info_line.split()
+        fetch = fetch.strip('(').strip(')')
+        fetch_url_key = fetch + '_url'
+        if remote_name in result:
+            new_info = {fetch_url_key: url}
+            result[remote_name].update(new_info)
+            if 'url' not in result[remote_name]:
+                result[remote_name]['url'] = url
+        else:
+            result.update(
+                {
+                    remote_name: {
+                        'url': url,
+                        fetch_url_key: url,
+                    }
+                }
+            )
 
     return result
 
@@ -715,11 +732,14 @@ def get_section_key(config_parser, section_key):
 def get_git_config_parser(repo_path):
     git_config_path = os.path.join(repo_path, '.git')
     config_file_path = os.path.join(git_config_path, 'config')
+    if not os.path.exists(config_file_path):
+        raise ValueError('%s does not exist' % config_file_path)
+
     # config parser example, https://wiki.python.org/moin/ConfigParserExamples
     config_parser = cp.ConfigParser(strict=False)
     try:
         config_parser.read(config_file_path, encoding='utf8')
-    except UnicodeDecodeError as e:
+    except UnicodeDecodeError:
         config_parser.read(config_file_path, encoding='cp949')
 
     return config_parser
@@ -769,7 +789,7 @@ def is_host(host_url, repo_path):
 
 
 def select_path(arg, directory_name, file_name):
-    git_logger.info("please do not use %" % (__file__ + '.' + 'select_path()'))
+    git_logger.info("please do not use %s" % (__file__ + '.' + 'select_path()'))
     raise DeprecationWarning
 
 
@@ -891,7 +911,10 @@ def get_remote_branch_list(repo_name='origin', b_verbose=False):
 
 
 def is_branch_in_remote_branch_list(branch_name, repo_name='origin', b_verbose=False):
-    return branch_name in get_remote_branch_list(repo_name, b_verbose)
+    remote_branch_list = get_remote_branch_list(repo_name, b_verbose)
+    if b_verbose:
+        print('is_branch_in_remote_branch_list() : remote_branch_list =', remote_branch_list)
+    return branch_name in remote_branch_list
 
 
 def git_tag_local_repo(tag_name_txt, repo_name='origin', b_verbose=False):
