@@ -5,7 +5,7 @@ from .. import git_update_all
 
 class TestGitUpdateAll(unittest.TestCase):
     def test_init_ignore(self):
-        ignore_path = os.path.join('test_init_ignore.txt')
+        ignore_path = os.path.join(os.path.split(__file__)[0], 'test_init_ignore.txt')
         result_set = set(git_update_all.init_ignore(ignore_path))
 
         expected_base_set = set(['.cache', '.git', '$RECYCLE.BIN',])
