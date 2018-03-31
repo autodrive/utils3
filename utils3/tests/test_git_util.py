@@ -72,17 +72,19 @@ class TestGitUtil(MyTestGitUtilBase):
         self.assertTrue(b_host)
 
     def test_remote_info(self):
-        dict_hist_info = git_util.get_remote_info_from_git_config(self.repo_path)
-        self.assertTrue(dict_hist_info)
+        dict_host_info = git_util.get_remote_info_from_git_config(self.repo_path)
+        self.assertTrue(dict_host_info)
         expected = {}
 
         filename = os.path.join(self.test_file_path, 'test_case_host_info.txt')
-        if os.path.exists(filename):
-            expected = eval(open(filename, 'r').read().strip())
-        else:
-            raise IOError('Unable to find expected file %s' % filename)
+        if not os.path.exists(filename):
+            print('''test_remote_info() : Unable to find expected file %s
+Generating one from the result''' % filename)
+            with open(filename, 'wt') as f:
+                f.write(str(dict_host_info))
+        expected = eval(open(filename, 'r').read().strip())
         self.maxDiff = None
-        self.assertDictEqual(expected, dict_hist_info)
+        self.assertDictEqual(expected, dict_host_info)
 
     def test_is_host2(self):
         input_file_name = 'test_case_is_host.txt'
