@@ -789,7 +789,7 @@ def is_host(host_url, repo_path):
 
 
 def select_path(arg, directory_name, file_name):
-    git_logger.info("please do not use %" % (__file__ + '.' + 'select_path()'))
+    git_logger.info("please do not use %s" % (__file__ + '.' + 'select_path()'))
     raise DeprecationWarning
 
 
