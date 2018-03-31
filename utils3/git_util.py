@@ -739,7 +739,7 @@ def get_git_config_parser(repo_path):
     config_parser = cp.ConfigParser(strict=False)
     try:
         config_parser.read(config_file_path, encoding='utf8')
-    except UnicodeDecodeError as e:
+    except UnicodeDecodeError:
         config_parser.read(config_file_path, encoding='cp949')
 
     return config_parser
