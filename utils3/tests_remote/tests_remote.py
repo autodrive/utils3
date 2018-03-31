@@ -13,13 +13,14 @@ class TestGitUtilRemotes(unittest.TestCase):
         pattern_str = 'heads'
 
         # get sample file
-        try:
+        if os.path.exists(filename):
             with open(filename, 'r') as f:
                 tags_list = [tag_str.strip() for tag_str in f.readlines()]
-
-        except IOError as e:
-            # file might be missing
+        else:
+            # if file missing
             # make a list from git ls-remote
+            Warning('''file %s might be missing
+make a list from git ls-remote''' % (filename))
             result_txt = git_util.git('ls-remote --%s' % pattern_str)
             result_line_list = result_txt.splitlines()
 
