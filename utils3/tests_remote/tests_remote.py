@@ -72,7 +72,7 @@ make a list from git ls-remote''' % (input_file_name))
                 result_line_list.pop(0)
 
             tags_list = []
-            with open('tags_list.txt', 'w') as f_out:
+            with open(input_file_name, 'w') as f_out:
 
                 # build list of expected tags
                 for line_txt in result_line_list:
