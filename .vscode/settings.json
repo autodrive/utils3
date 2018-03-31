@@ -1,0 +1,6 @@
+{
+    "python.unitTest.unittestArgs": [
+        "discover"
+    ],
+    "python.unitTest.unittestEnabled": true
+}
