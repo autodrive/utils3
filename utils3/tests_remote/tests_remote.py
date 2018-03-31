@@ -8,8 +8,9 @@ class TestGitUtilRemotes(unittest.TestCase):
     def test_get_remote_branch_list(self):
         # function under test
         result_set = set(git_util.get_remote_branch_list())
+        # sample file in the test script folder
+        filename = os.path.join(os.path.split(__file__)[0], 'remote_branch_list.txt')
 
-        filename = 'remote_branch_list.txt'
         pattern_str = 'heads'
 
         # get sample file
