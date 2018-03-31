@@ -63,7 +63,7 @@ result_set = %r
             with open(input_file_name, 'r') as f:
                 tags_list = [tag_str.strip() for tag_str in f.readlines()]
         else:
-            Warning('''file %s might be missing
+            print('''test_get_remote_tag_list() : file %s might be missing
 make a list from git ls-remote''' % (input_file_name))
             result_txt = git_util.git('ls-remote --tags')
             result_line_list = result_txt.splitlines()
