@@ -50,7 +50,7 @@ class TestGitUtilRemotes(unittest.TestCase):
         result_list = git_util.get_remote_tag_list()
         result_set = set(result_list)
 
-        input_file_name = 'tags_list.txt'
+        input_file_name = os.path.join(os.path.split(__file__)[0], 'tags_list.txt')
 
         if os.path.exists(input_file_name):
             with open(input_file_name, 'r') as f:
