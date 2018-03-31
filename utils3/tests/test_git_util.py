@@ -64,8 +64,9 @@ class TestGitUtil(MyTestGitUtilBase):
 
         # git_util.git_logger.debug('%s %s' % ('test_is_host2()', os.getcwd()))
         if not os.path.exists(input_file_name):
-            print("test_is_host2() : os.getcwd() == %s" % os.getcwd())
-            print("test_is_host2() : unable to find file %s" % input_file_name)
+            test_method_name = 'test_is_host2'
+            print("%s() : os.getcwd() == %s" % (test_method_name, os.getcwd()))
+            print("%s() : unable to find file %s" % (test_method_name, input_file_name))
             if os.path.exists('tests') and os.path.isdir('tests'):
                 input_file_name = os.path.join('tests', input_file_name)
             else:
