@@ -269,7 +269,10 @@ class TestGitUtilRemoteInfo(MyTestGitUtilBase):
         self.assertSequenceEqual(expected_remote_url_tuple, result_remote_url_tuple)
 
     def test_branch_info(self):
-        with open(os.path.join(self.test_path, 'test_branch_info.txt'), 'r') as f:
+        input_file_name = 'test_branch_info.txt'
+        if not os.path.exists(os.path.join(self.test_path, input_file_name)):
+            input_file_name = self.get_new_input_file_name('test_branch_info', input_file_name)
+        with open(input_file_name, 'r') as f:
             txt = f.read()
 
         temp_folder = tempfile.mkdtemp()
