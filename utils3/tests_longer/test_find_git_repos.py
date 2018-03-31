@@ -11,14 +11,14 @@ class TestFindGitRepositories(unittest.TestCase):
                                                                b_verbose=False)
 
         expected_set = set()
-        sample_file_name = 'test_find_git_repos.txt'
+        sample_file_name = os.path.join(os.path.split(__file__)[0], 'test_find_git_repos.txt')
 
         if not os.path.exists(sample_file_name):
             # package architecture path
             sample_file_name = os.path.join(os.getcwd(), 'utils3', 'tests_longer', sample_file_name)
             if not os.path.exists(sample_file_name):
                 with open(sample_file_name, 'wt') as f:
-                    f.write('\n')                    
+                    f.write('')                    
 
         with open(sample_file_name, 'rt') as sample_file:
             for item in sample_file:
