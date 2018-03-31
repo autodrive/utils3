@@ -38,7 +38,7 @@ class TestUnpackIpythonNotebookOneFile(MyTestGitUtilBase):
             expected_nb_name = os.path.abspath('.'.join((test_file_name, self.notebook_ext)))
 
             if not os.path.exists(expected_nb_name):
-                raise IOError("File %.150s missing" % expected_nb_name)
+                raise IOError("File %.150s missing \n__file__ = %s" % (expected_nb_name, __file__))
 
             # function under tests
             unpack.unpack(expected_nb_name, b_verbose=True)
