@@ -911,7 +911,10 @@ def get_remote_branch_list(repo_name='origin', b_verbose=False):
 
 
 def is_branch_in_remote_branch_list(branch_name, repo_name='origin', b_verbose=False):
-    return branch_name in get_remote_branch_list(repo_name, b_verbose)
+    remote_branch_list = get_remote_branch_list(repo_name, b_verbose)
+    if b_verbose:
+        print('is_branch_in_remote_branch_list() : remote_branch_list =', remote_branch_list)
+    return branch_name in remote_branch_list
 
 
 def git_tag_local_repo(tag_name_txt, repo_name='origin', b_verbose=False):
