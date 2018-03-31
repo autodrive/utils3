@@ -6,9 +6,9 @@ import re
 import sys
 import urllib.parse
 
-import utils3.find_git_repos as find_git_repos
-import utils3.git_update_all as git_update_all
-import utils3.git_util as git_util
+from . import find_git_repos
+from . import git_update_all
+from . import git_util
 
 def main(argv):
     repo_path = argv[1]

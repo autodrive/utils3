@@ -1,7 +1,7 @@
 import os
 import unittest
 
-import utils3.find_git_repos as find_git_repos
+from .. import find_git_repos
 
 
 class TestFindGitRepositories(unittest.TestCase):

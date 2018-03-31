@@ -1,6 +1,6 @@
 import unittest
 
-import utils3.git_util as git_util
+from .. import git_util
 
 
 class TestGitUtilRemotes(unittest.TestCase):

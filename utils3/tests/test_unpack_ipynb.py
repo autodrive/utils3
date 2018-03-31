@@ -1,8 +1,8 @@
 import unittest
-from utils3.tests.test_git_util import MyTestGitUtilBase
+from .test_git_util import MyTestGitUtilBase
 import os
 
-import utils3.unpack_ipynb as unpack
+from .. import unpack_ipynb as unpack
 import math
 
 
