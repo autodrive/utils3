@@ -1,18 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 
+import ast
 import os
 import re
 import sys
 import urllib.parse
 
+
 try:
     from . import find_git_repos
+    # To test
     from . import git_update_all
     from . import git_util
 
 except SystemError:
-    # To accomodate both testing and running
+    # To run
     import find_git_repos
     import git_update_all
     import git_util
@@ -189,7 +192,13 @@ class ApplySSHgithub(ApplySSHbitbucket):
 
 
 def main(argv):
+
+    if os.path.isdir(argv[1]):
     d = list_ssh_repos(argv[1])
+    elif os.path.isfile(argv[1]):
+        d = ast.literal_eval(open(argv[1]).read().strip())
+    else:
+        raise IOError('Unable to handle %s' % argv[1])
    
     print('# ssh repos =', len(d))
 
