@@ -6,9 +6,16 @@ import re
 import sys
 import urllib.parse
 
+try:
 from . import find_git_repos
 from . import git_update_all
 from . import git_util
+
+except SystemError:
+    # To accomodate both testing and running
+    import find_git_repos
+    import git_update_all
+    import git_util
 
 
 def run_apply_ssh(argv):
