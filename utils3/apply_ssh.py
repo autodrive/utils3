@@ -224,8 +224,11 @@ def main(argv):
         os.chdir(d[repo_name]['path'])
 
         for remote_name in d[repo_name]['remote']:
-            print('remote\t=', remote_name)
-            print('url\t=', d[repo_name]['remote'][remote_name])
+            parse = urllib.parse.urlparse(d[repo_name]['remote'][remote_name])
+            if 'ssh' == parse.scheme:
+                print('remote\t=', remote_name)
+                print('url\t=', d[repo_name]['remote'][remote_name])
+                print('parse\t=', parse)
 
         os.chdir(current_path)
 
