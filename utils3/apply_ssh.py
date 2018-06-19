@@ -209,6 +209,14 @@ def main(argv):
 
     print('# ssh repos =', len(d))
 
+    convert_ssh_to_https(d)
+
+
+def convert_ssh_to_https(d):
+    """
+    Convert remote urls ssh in d to https
+    """
+
     # formatter with maximum width
     formatter = '\n[{k:3d}] {repo_name:%ds} {path!s}' % get_max_width(d)
 
