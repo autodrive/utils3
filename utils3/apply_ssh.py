@@ -10,7 +10,11 @@ from . import find_git_repos
 from . import git_update_all
 from . import git_util
 
-def main(argv):
+
+def run_apply_ssh(argv):
+    """
+    Run https -> ssh converter
+    """
     repo_path = argv[1]
 
     remote_type = argv[2]
@@ -177,6 +181,11 @@ class ApplySSHgithub(ApplySSHbitbucket):
         return ssh_url
 
 
+def list_ssh_repos(root):
+    for repo_path, dir_list, file_list in gen_all_repo_paths(root):
+        print(repo_path)
+
+
 def gen_all_repo_paths(root):
     """
     A generator for all repository paths
@@ -186,7 +195,7 @@ def gen_all_repo_paths(root):
     for root_path, dir_list, file_list in os.walk(root):
         if '.git' not in root_path.split(os.sep):
             if '.git' in dir_list:
-            yield root_path, dir_list, file_list
+                yield root_path, dir_list, file_list
 
 
 if __name__ == '__main__':
