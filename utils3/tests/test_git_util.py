@@ -273,11 +273,16 @@ class TestGitUtilRemoteInfo(MyTestGitUtilBase):
 
     def test_remote_info_dict_to_url_tuple(self):
         result_remote_url_tuple = git_util.remote_info_dict_to_url_tuple(self.expected_remote_info_dict)
-        # git_util.git_logger.info(result_remote_url_tuple)
-        expected_remote_url_tuple = ((self.remote_name_01, self.url_01),
-                                     (self.remote_name_02, self.url_02))
 
-        self.assertSequenceEqual(expected_remote_url_tuple, result_remote_url_tuple)
+        result_remote_url_dict = {x[0]:x[1] for x in result_remote_url_tuple}
+
+        # git_util.git_logger.info(result_remote_url_tuple)
+        expected_remote_url_dict = {
+            self.remote_name_01: self.url_01,
+            self.remote_name_02: self.url_02
+        }
+
+        self.assertDictEqual(expected_remote_url_dict, result_remote_url_dict)
 
     def test_branch_info(self):
         input_file_name = os.path.join(os.path.split(__file__)[0], 'test_branch_info.txt')
