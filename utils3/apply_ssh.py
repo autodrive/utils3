@@ -193,13 +193,20 @@ class ApplySSHgithub(ApplySSHbitbucket):
 
 def main(argv):
 
-    if os.path.isdir(argv[1]):
-    d = list_ssh_repos(argv[1])
-    elif os.path.isfile(argv[1]):
+    if 2 == len(argv) and os.path.isfile(argv[1]):
         d = ast.literal_eval(open(argv[1]).read().strip())
+
+    elif os.path.isdir(argv[1]):
+        d = list_ssh_repos(argv[1])
+
     else:
         raise IOError('Unable to handle %s' % argv[1])
-   
+
+    # if second argument available, write d to it
+    if 2 < len(argv):
+        with open(argv[2], 'wt') as out_file:
+            out_file.write(repr(d))
+
     print('# ssh repos =', len(d))
 
     n_max_key_width = 0
@@ -235,7 +242,7 @@ def list_ssh_repos(root):
         # if any of the remote urls use ssh, keep the record
         if any(is_ssh_url_list):
             repo_name = os.path.split(repo_path)[-1]
-            result_dict[repo_name] = {'path':repo_path, 'url_list':remote_url_list}
+            result_dict[repo_name] = {'path':repo_path, 'remote':{name: url for name, url in zip(remote_list, remote_url_list)}}
 
         # return to the original path
         os.chdir(current_path)
