@@ -7,9 +7,9 @@ import sys
 import urllib.parse
 
 try:
-from . import find_git_repos
-from . import git_update_all
-from . import git_util
+    from . import find_git_repos
+    from . import git_update_all
+    from . import git_util
 
 except SystemError:
     # To accomodate both testing and running
@@ -191,8 +191,15 @@ class ApplySSHgithub(ApplySSHbitbucket):
 def main(argv):
     d = list_ssh_repos(argv[1])
    
+    n_max_key_width = 0
+    for key in d:
+        if len(str(key)) > n_max_key_width:
+            n_max_key_width = len(str(key))
+    
+    formatter = '{k:3d} {key:%ds} {path}' % n_max_key_width
+
     for k, key in enumerate(d):
-        print('{k:3d} {key:10s} {path}'.format(k=k, key=key, path=d[key]['path']))
+        print(formatter.format(k=k, key=key, path=d[key]['path']))
 
 
 def list_ssh_repos(root):
