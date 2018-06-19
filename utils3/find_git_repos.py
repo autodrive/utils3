@@ -1,7 +1,12 @@
 import os
 
-from . import find_in
-from . import git_util
+try:
+    from . import find_in
+    from . import git_util
+except ImportError:
+    import find_in
+    import git_util
+
 
 # TODO : git-svn remote info?
 
