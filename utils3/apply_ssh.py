@@ -216,8 +216,18 @@ def main(argv):
     
     formatter = '{k:3d} {repo_name:%ds} {path!s}' % n_max_key_width
 
+    current_path = os.getcwd()
+
     for k, repo_name in enumerate(d):
         print(formatter.format(k=k, repo_name=repo_name, path=d[repo_name]))
+        # ch dir to the repository path
+        os.chdir(d[repo_name]['path'])
+
+        for remote_name in d[repo_name]['remote']:
+            print('remote\t=', remote_name)
+            print('url\t=', d[repo_name]['remote'][remote_name])
+
+        os.chdir(current_path)
 
 
 def list_ssh_repos(root):
