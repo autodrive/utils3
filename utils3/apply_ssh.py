@@ -191,6 +191,8 @@ class ApplySSHgithub(ApplySSHbitbucket):
 def main(argv):
     d = list_ssh_repos(argv[1])
    
+    print('# ssh repos =', len(d))
+
     n_max_key_width = 0
     for repo_name in d:
         if len(str(repo_name)) > n_max_key_width:
