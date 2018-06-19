@@ -209,12 +209,8 @@ def main(argv):
 
     print('# ssh repos =', len(d))
 
-    n_max_key_width = 0
-    for repo_name in d:
-        if len(str(repo_name)) > n_max_key_width:
-            n_max_key_width = len(str(repo_name))
-    
-    formatter = '\n[{k:3d}] {repo_name:%ds} {path!s}' % n_max_key_width
+    # formatter with maximum width
+    formatter = '\n[{k:3d}] {repo_name:%ds} {path!s}' % get_max_width(d)
 
     # pattern to match ssh url netloc with `domain name` and `id`
     # https://www.regular-expressions.info/refext.html
@@ -248,6 +244,13 @@ def main(argv):
                     print('new cmd\t=', new_git_cmd)
 
         os.chdir(current_path)
+
+
+def get_max_width(sequence):
+    """
+    Get the maximum of width of element of the sequence
+    """
+    return max(map(lambda element:len(str(element)), sequence))
 
 
 def list_ssh_repos(root):
