@@ -188,9 +188,20 @@ class ApplySSHgithub(ApplySSHbitbucket):
         return ssh_url
 
 
+def main(argv):
+    d = list_ssh_repos(argv[1])
+   
+    for k, key in enumerate(d):
+        print('{k:3d} {key:10s} {path}'.format(k=k, key=key, path=d[key]['path']))
+
+
 def list_ssh_repos(root):
+    result_dict = {}
     for repo_path, dir_list, file_list in gen_all_repo_paths(root):
-        print(repo_path)
+        repo_name = os.path.split(repo_path)[-1]
+        result_dict[repo_name] = {'path':repo_path}
+
+    return result_dict
 
 
 def gen_all_repo_paths(root):
