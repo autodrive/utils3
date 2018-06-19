@@ -14,7 +14,12 @@ import sys
 import time
 import urllib.parse
 
-from . import wapj_logger
+
+try:
+    from . import wapj_logger
+except ImportError:
+    import wapj_logger
+
 
 # TODO : remote info of git-svn
 

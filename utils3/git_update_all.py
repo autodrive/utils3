@@ -6,9 +6,16 @@ import pickle
 import random
 import time
 
-from . import find_git_repos
-from . import git_util
 
+try:
+    from . import find_git_repos
+    from . import git_util
+
+# if unable to import
+except ImportError:
+    import find_git_repos
+    import git_util
+    
 
 def init_ignore(ignore_filename='.git_update_all_ignore'):
 
