@@ -3,7 +3,7 @@ import os
 try:
     from . import find_in
     from . import git_util
-except ImportError:
+except SystemError:
     import find_in
     import git_util
 
