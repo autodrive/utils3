@@ -12,7 +12,7 @@ try:
     from . import git_util
 
 # if unable to import
-except ImportError:
+except SystemError:
     import find_git_repos
     import git_util
     

@@ -17,7 +17,7 @@ import urllib.parse
 
 try:
     from . import wapj_logger
-except ImportError:
+except SystemError:
     import wapj_logger
 
 
