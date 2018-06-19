@@ -161,7 +161,7 @@ class ApplySSHgithub(ApplySSHbitbucket):
         parse_result = urllib.parse.urlparse(https_url)
         parse_result_list = list(parse_result)
 
-        # scheme
+        # scheme 
         parse_result_list[0] = 'ssh'
 
 
@@ -175,6 +175,18 @@ class ApplySSHgithub(ApplySSHbitbucket):
         # make ssh url
         ssh_url = urllib.parse.urlunparse(parse_result_list)
         return ssh_url
+
+
+def gen_all_repo_paths(root):
+    """
+    A generator for all repository paths
+    Would pass if .git or igore path
+    """
+
+    for root_path, dir_list, file_list in os.walk(root):
+        if '.git' not in root_path.split(os.sep):
+            if '.git' in dir_list:
+            yield root_path, dir_list, file_list
 
 
 if __name__ == '__main__':
