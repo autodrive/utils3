@@ -192,14 +192,14 @@ def main(argv):
     d = list_ssh_repos(argv[1])
    
     n_max_key_width = 0
-    for key in d:
-        if len(str(key)) > n_max_key_width:
-            n_max_key_width = len(str(key))
+    for repo_name in d:
+        if len(str(repo_name)) > n_max_key_width:
+            n_max_key_width = len(str(repo_name))
     
-    formatter = '{k:3d} {key:%ds} {path}' % n_max_key_width
+    formatter = '{k:3d} {repo_name:%ds} {path!s}' % n_max_key_width
 
-    for k, key in enumerate(d):
-        print(formatter.format(k=k, key=key, path=d[key]['path']))
+    for k, repo_name in enumerate(d):
+        print(formatter.format(k=k, repo_name=repo_name, path=d[repo_name]))
 
 
 def list_ssh_repos(root):
