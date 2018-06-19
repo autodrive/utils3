@@ -252,7 +252,8 @@ def list_ssh_repos(root):
         # if any of the remote urls use ssh, keep the record
         if any(is_ssh_url_list):
             repo_name = os.path.split(repo_path)[-1]
-            result_dict[repo_name] = {'path':repo_path, 'remote':{name: url for name, url in zip(remote_list, remote_url_list)}}
+            # name or url may have unnecessary newline character at the end
+            result_dict[repo_name] = {'path':repo_path, 'remote':{name.strip(): url.strip() for name, url in zip(remote_list, remote_url_list)}}
 
         # return to the original path
         os.chdir(current_path)
