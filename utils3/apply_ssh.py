@@ -216,6 +216,10 @@ def main(argv):
     
     formatter = '\n[{k:3d}] {repo_name:%ds} {path!s}' % n_max_key_width
 
+    # pattern to match ssh url netloc with `domain name` and `id`
+    # https://www.regular-expressions.info/refext.html
+    r = re.compile('git@(?P<domain_name>.+?)-(?P<id>.+)')
+
     current_path = os.getcwd()
 
     for k, repo_name in enumerate(d):
