@@ -233,6 +233,19 @@ def main(argv):
                 print('remote\t=', remote_name)
                 print('url\t=', d[repo_name]['remote'][remote_name])
                 print('parse\t=', parse)
+                for m in r.finditer(parse.netloc):
+                    # unpack matched object
+                    m_dict = m.groupdict()
+                    # new netloc for https url
+                    # placeholders must be consistent with regex object
+                    new_netloc = '{id}@{domain_name}'.format(**m_dict)
+                    # re assemble https url
+                    new_parse = urllib.parse.ParseResult('https', new_netloc, parse.path, parse.params, parse.query, parse.fragment)
+                    new_url = urllib.parse.urlunparse(new_parse)
+                    print('new url\t=', new_url)
+
+                    new_git_cmd = 'remote set-url {remote_name} {new_url}'.format(remote_name=remote_name, new_url=new_url)
+                    print('new cmd\t=', new_git_cmd)
 
         os.chdir(current_path)
 
