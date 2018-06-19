@@ -214,7 +214,7 @@ def main(argv):
         if len(str(repo_name)) > n_max_key_width:
             n_max_key_width = len(str(repo_name))
     
-    formatter = '{k:3d} {repo_name:%ds} {path!s}' % n_max_key_width
+    formatter = '\n[{k:3d}] {repo_name:%ds} {path!s}' % n_max_key_width
 
     current_path = os.getcwd()
 
