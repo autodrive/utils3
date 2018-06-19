@@ -205,8 +205,29 @@ def main(argv):
 def list_ssh_repos(root):
     result_dict = {}
     for repo_path, dir_list, file_list in gen_all_repo_paths(root):
-        repo_name = os.path.split(repo_path)[-1]
-        result_dict[repo_name] = {'path':repo_path}
+
+        # store return path
+        current_path = os.getcwd()
+
+        # move to the repository
+        os.chdir(repo_path)
+
+        # list of remote names
+        remote_list = [remote_name.strip() for remote_name in git_util.git('remote').splitlines()]
+
+        # list of remote urls
+        remote_url_list = list(map(lambda x: git_util.git('remote get-url {remote_name}'.format(remote_name=x), b_verbose=False), remote_list))
+
+        # list of bool : is the remote url ssh?
+        is_ssh_url_list = list(map(lambda x: x.startswith('ssh://'), remote_url_list))
+
+        # if any of the remote urls use ssh, keep the record
+        if any(is_ssh_url_list):
+            repo_name = os.path.split(repo_path)[-1]
+            result_dict[repo_name] = {'path':repo_path, 'url_list':remote_url_list}
+
+        # return to the original path
+        os.chdir(current_path)
 
     return result_dict
 
