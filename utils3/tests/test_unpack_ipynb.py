@@ -1,9 +1,15 @@
-import unittest
-from .test_git_util import MyTestGitUtilBase
-import os
-
-from .. import unpack_ipynb as unpack
 import math
+import os
+import sys
+import unittest
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
+
+import unpack_ipynb as unpack
+
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+
+from test_git_util import MyTestGitUtilBase
 
 
 class TestUnpackIpythonNotebookOneFile(MyTestGitUtilBase):

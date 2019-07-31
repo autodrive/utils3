@@ -1,8 +1,11 @@
 # because these tests took relatively longer time than others
 import os
+import sys
 import unittest
 
-from .. import git_util
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
+
+import git_util
 
 
 class TestRecursivelyFindPath(unittest.TestCase):

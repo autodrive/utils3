@@ -4,17 +4,15 @@ import codecs
 import os
 import pickle
 import random
+import sys
 import time
 
 
-try:
-    from . import find_git_repos
-    from . import git_util
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
-# if unable to import
-except SystemError:
-    import find_git_repos
-    import git_util
+
+import find_git_repos
+import git_util
     
 
 def init_ignore(ignore_filename='.git_update_all_ignore'):

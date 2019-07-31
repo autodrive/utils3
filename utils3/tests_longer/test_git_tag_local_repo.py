@@ -1,12 +1,16 @@
 # because these tests took relatively longer time than others
+import os
 import random
 import re
+import sys
 import unittest
 
-from .. import git_util
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
 
+import git_util
 
 class TestRecursivelyFindPath(unittest.TestCase):
+
     def test_git_tag_local_repo(self):
         tag_name = 'del_this_%d' % random.randint(1, 100)
         repo_name = 'origin'

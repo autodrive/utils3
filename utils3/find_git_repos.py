@@ -1,15 +1,13 @@
 import os
+import sys
 
-try:
-    from . import find_in
-    from . import git_util
-except SystemError:
-    import find_in
-    import git_util
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+
+import find_in
+import git_util
 
 
 # TODO : git-svn remote info?
-
 
 class RecursiveGitRepositoryFinderBase(find_in.RecursiveFinderBase):
     """

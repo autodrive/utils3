@@ -14,11 +14,9 @@ import sys
 import time
 import urllib.parse
 
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
-try:
-    from . import wapj_logger
-except SystemError:
-    import wapj_logger
+import wapj_logger
 
 
 # TODO : remote info of git-svn

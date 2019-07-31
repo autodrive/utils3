@@ -8,17 +8,13 @@ import sys
 import urllib.parse
 
 
-try:
-    from . import find_git_repos
-    # To test
-    from . import git_update_all
-    from . import git_util
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
-except SystemError:
-    # To run
-    import find_git_repos
-    import git_update_all
-    import git_util
+
+# To run
+import find_git_repos
+import git_update_all
+import git_util
 
 
 def run_apply_ssh(argv):

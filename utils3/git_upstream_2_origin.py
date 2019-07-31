@@ -1,7 +1,7 @@
 import os
 import sys
 
-from . import git_util
+import git_util
 
 
 def push_missing_upstream_branches(repo_path=os.getcwd(), b_checkout_force=False):

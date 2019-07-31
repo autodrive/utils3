@@ -2,7 +2,7 @@ import os
 import pprint
 import sys
 
-from . import git_util as git
+import git_util as git
 
 
 def main(argv):

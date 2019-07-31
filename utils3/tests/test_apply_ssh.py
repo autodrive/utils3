@@ -1,6 +1,10 @@
 import os
+import sys
 import unittest
-from .. import apply_ssh as apply_ssh
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
+
+import apply_ssh as apply_ssh
 
 
 current_path = os.getcwd()
